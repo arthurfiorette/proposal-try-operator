@@ -47,7 +47,6 @@ const [error, response] ?= await fetch("https://arthur.place")
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Authors](#authors)
 - [Inspiration](#inspiration)
-- [Inspiration](#inspiration-1)
 - [License](#license)
 
 <br />
@@ -526,8 +525,6 @@ This proposal is in its early stages, and we welcome your input to help refine i
 - [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([Twitter](https://x.com/arthurfiorette))</sub>
 
 <br />
-
-## Inspiration
 
 ## Inspiration
 
