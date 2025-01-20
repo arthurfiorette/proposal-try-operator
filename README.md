@@ -1,378 +1,322 @@
 <br />
 
-> [!CAUTION]
-> This proposal will change to `try-expressions` as its a more idiomatic apporach to this problem. Help us rewrite it at [#53](https://github.com/arthurfiorette/proposal-safe-assignment-operator/pull/53).
-> 
-> Help on its rewriting is needed :)
-
-<br />
-
-<h1>ECMAScript Safe Assignment Operator Proposal</h1>
+<h1>ECMAScript Try Expressions</h1>
 
 > [!WARNING]  
-> This proposal is actively under development, and [contributions are welcome](#help-us-improve-this-proposal).
+> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Expressions`.
 
 <br />
 
-This proposal introduces a new operator, `?=` _(Safe Assignment)_, which simplifies error handling by transforming the result of a function into a tuple. If the function throws an error, the operator returns `[error, null]`; if the function executes successfully, it returns `[null, result]`. This operator is compatible with promises, async functions, and any value that implements the [`Symbol.result`](#symbolresult) method.
-
-For example, when performing I/O operations or interacting with Promise-based APIs, errors can occur unexpectedly at runtime. Neglecting to handle these errors can lead to unintended behavior and potential security vulnerabilities.
+<div align="center">
+  <img src="./assets/banner.png" alt="ECMAScript Try Expressions Proposal" />
+</div>
 
 <br />
 
-```ts
-const [error, response] ?= await fetch("https://arthur.place")
-```
+This proposal aims to address the ergonomic challenges of managing multiple, often nested, `try/catch` blocks that are necessary for handling operations that may fail at various points.
+
+Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
 <hr />
 <br />
 
-- [Motivation](#motivation)
-- [Proposed Features](#proposed-features)
-  - [`Symbol.result`](#symbolresult)
-  - [The Safe Assignment Operator (`?=`)](#the-safe-assignment-operator-)
-    - [Usage in Functions](#usage-in-functions)
-    - [Usage with Objects](#usage-with-objects)
-  - [Recursive Handling](#recursive-handling)
-  - [Promises](#promises)
-  - [`using` Statement](#using-statement)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
-- [Why Not `data` First?](#why-not-data-first)
-- [Polyfilling](#polyfilling)
-- [Using `?=` with Functions and Objects Without `Symbol.result`](#using--with-functions-and-objects-without-symbolresult)
-- [Comparison](#comparison)
-- [Similar Prior Art](#similar-prior-art)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
-- [Current Limitations](#current-limitations)
+- [Try Operator](#try-operator)
+  - [Rules for `try` expressions:](#rules-for-try-expressions)
+- [Result class](#result-class)
+- [Why Not `data` First?](#why-not-data-first)
+- [The Need for an `ok` Value](#the-need-for-an-ok-value)
+- [Caller's Approach](#callers-approach)
+- [Why a Proposal?](#why-a-proposal)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Authors](#authors)
 - [Inspiration](#inspiration)
-- [Inspiration](#inspiration-1)
 - [License](#license)
-
-<br />
-
-## Motivation
-
-- **Simplified Error Handling**: Streamline error management by eliminating the need for try-catch blocks.
-- **Enhanced Readability**: Improve code clarity by reducing nesting and making the flow of error handling more intuitive.
-- **Consistency Across APIs**: Establish a uniform approach to error handling across various APIs, ensuring predictable behavior.
-- **Improved Security**: Reduce the risk of overlooking error handling, thereby enhancing the overall security of the code.
-
-<br />
-
-<!-- credits to https://www.youtube.com/watch?v=SloZE4i4Zfk -->
-
-How often have you seen code like this?
-
-```ts
-async function getData() {
-  const response = await fetch("https://api.example.com/data")
-  const json = await response.json()
-  return validationSchema.parse(json)
-}
-```
-
-The issue with the above function is that it can fail silently, potentially crashing your program without any explicit warning.
-
-1. `fetch` can reject.
-2. `json` can reject.
-3. `parse` can throw.
-4. Each of these can produce multiple types of errors.
-
-To address this, we propose the adoption of a new operator, `?=`, which facilitates more concise and readable error handling.
-
-```ts
-async function getData() {
-  const [requestError, response] ?= await fetch(
-    "https://api.example.com/data"
-  )
-
-  if (requestError) {
-    handleRequestError(requestError)
-    return
-  }
-
-  const [parseError, json] ?= await response.json()
-
-  if (parseError) {
-    handleParseError(parseError)
-    return
-  }
-
-  const [validationError, data] ?= validationSchema.parse(json)
-
-  if (validationError) {
-    handleValidationError(validationError)
-    return
-  }
-
-  return data
-}
-```
-
-<br />
-
-Please refer to the [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve) section to understand the limitations of this proposal.
-
-<br />
-
-## Proposed Features
-
-This proposal aims to introduce the following features:
-
-<br />
-
-### `Symbol.result`
-
-Any object that implements the `Symbol.result` method can be used with the `?=` operator.
-
-```ts
-function example() {
-  return {
-    [Symbol.result]() {
-      return [new Error("123"), null]
-    },
-  }
-}
-
-const [error, result] ?= example() // Function.prototype also implements Symbol.result
-// const [error, result] = example[Symbol.result]()
-
-// error is Error('123')
-```
-
-The `Symbol.result` method must return a tuple, where the first element represents the error and the second element represents the result.
-
-[Why Not `data` First?](#why-not-data-first)
-
-<br />
-
-### The Safe Assignment Operator (`?=`)
-
-The `?=` operator invokes the `Symbol.result` method on the object or function on the right side of the operator, ensuring that errors and results are consistently handled in a structured manner.
-
-```ts
-const obj = {
-  [Symbol.result]() {
-    return [new Error("Error"), null]
-  },
-}
-
-const [error, data] ?= obj
-// const [error, data] = obj[Symbol.result]()
-```
-
-```ts
-function action() {
-  return 'data'
-}
-
-const [error, data] ?= action(argument)
-// const [error, data] = action[Symbol.result](argument)
-```
-
-The result should conform to the format `[error, null | undefined]` or `[null, data]`.
-
-#### Usage in Functions
-
-When the `?=` operator is used within a function, all parameters passed to that function are forwarded to the `Symbol.result` method.
-
-```ts
-declare function action(argument: string): string
-
-const [error, data] ?= action(argument1, argument2, ...)
-// const [error, data] = action[Symbol.result](argument, argument2, ...)
-```
-
-#### Usage with Objects
-
-When the `?=` operator is used with an object, no parameters are passed to the `Symbol.result` method.
-
-```ts
-declare const obj: { [Symbol.result]: () => any }
-
-const [error, data] ?= obj
-// const [error, data] = obj[Symbol.result]()
-```
-
-<br />
-
-### Recursive Handling
-
-The `[error, null]` tuple is generated upon the first error encountered. However, if the `data` in a `[null, data]` tuple also implements a `Symbol.result` method, it will be invoked recursively.
-
-```ts
-const obj = {
-  [Symbol.result]() {
-    return [
-      null,
-      {
-        [Symbol.result]() {
-          return [new Error("Error"), null]
-        },
-      },
-    ]
-  },
-}
-
-const [error, data] ?= obj
-// const [error, data] = obj[Symbol.result]()
-
-// error is  Error('string')
-```
-
-These behaviors facilitate handling various situations involving promises or objects with `Symbol.result` methods:
-
-- `async function(): Promise<T>`
-- `function(): T`
-- `function(): T | Promise<T>`
-
-These cases may involve 0 to 2 levels of nested objects with `Symbol.result` methods, and the operator is designed to handle all of them correctly.
-
-<br />
-
-### Promises
-
-A `Promise` is the only other implementation, besides `Function`, that can be used with the `?=` operator.
-
-```ts
-const promise = getPromise()
-const [error, data] ?= await promise
-// const [error, data] = await promise[Symbol.result]()
-```
-
-You may have noticed that `await` and `?=` can be used together, and that's perfectly fine. Due to the [Recursive Handling](#recursive-handling) feature, there are no issues with combining them in this way.
-
-```ts
-const [error, data] ?= await getPromise()
-// const [error, data] = await getPromise[Symbol.result]()
-```
-
-The execution will follow this order:
-
-1. `getPromise[Symbol.result]()` might throw an error when called (if it's a synchronous function returning a promise).
-2. If **an** error is thrown, it will be assigned to `error`, and execution will halt.
-3. If **no** error is thrown, the result will be assigned to `data`. Since `data` is a promise and promises have a `Symbol.result` method, it will be handled recursively.
-4. If the promise **rejects**, the error will be assigned to `error`, and execution will stop.
-5. If the promise **resolves**, the result will be assigned to `data`.
-
-<br />
-
-### `using` Statement
-
-The `using` or `await using` statement should also work with the `?=` operator. It will perform similarly to a standard `using x = y` statement.
-
-Note that errors thrown when disposing of a resource are not caught by the `?=` operator, just as they are not handled by other current features.
-
-```ts
-try {
-  using a = b
-} catch(error) {
-  // handle
-}
-
-// now becomes
-using [error, a] ?= b
-
-// or with async
-
-try {
-  await using a = b
-} catch(error) {
-  // handle
-}
-
-// now becomes
-await using [error, a] ?= b
-```
-
-The `using` management flow is applied only when `error` is `null` or `undefined`, and `a` is truthy and has a `Symbol.dispose` method.
 
 <br />
 
 ## Try/Catch Is Not Enough
 
-<!-- credits to https://x.com/LeaVerou/status/1819381809773216099 -->
+<!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 :) -->
 
-The `try {}` block is rarely useful, as its scoping lacks conceptual significance. It often functions more as a code annotation rather than a control flow construct. Unlike control flow blocks, there is no program state that is meaningful only within a `try {}` block.
+The `try {}` block is often redundant, as its scoping lacks meaningful conceptual significance. It generally acts more as a code annotation than a genuine control flow construct. Unlike true control flow blocks, no program state exists that requires being confined to a `try {}` block.
 
-In contrast, the `catch {}` block **is** actual control flow, and its scoping is meaningful and relevant.
+Conversely, the `catch {}` block **is** genuine control flow, making its scoping relevant and meaningful. According to Oxford Languages, an exception is defined as:
 
-Using `try/catch` blocks has **two main syntax problems**:
+> a person or thing that is excluded from a general statement or does not follow a rule.
+
+Since `catch` handles exceptions, it is logical to encapsulate exception-handling logic in a block to exclude it from the general program flow.
+
+The pseudocode below illustrates the lack of value in nesting the success path within a code block:
 
 ```js
-// Nests 1 level for each error handling block
-async function readData(filename) {
+async function handle(request, reply) {
   try {
-    const fileContent = await fs.readFile(filename, "utf8")
+    const userInfo = await cache.getUserInfo(request.id)
 
     try {
-      const json = JSON.parse(fileContent)
+      const posts = await db.getPosts(userInfo.authorId)
 
-      return json.data
+      let comments
+
+      // Variables used after error handling must be declared outside the block
+      try {
+        comments = await db.getComments(posts.map((post) => post.id))
+      } catch (error) {
+        logger.error(error, "Posts without comments not implemented yet")
+        return reply.status(500).send({ error: "Could not get comments" })
+      }
+
+      // Do something with comments before returning
+      return reply.send({ userInfo, posts, comments })
     } catch (error) {
-      handleJsonError(error)
-      return
+      logger.error(error, "Anonymous user behavior not implemented yet")
+      return reply.status(500).send({ error: "Could not get posts" })
     }
   } catch (error) {
-    handleFileError(error)
-    return
+    logger.error(error, "Maybe DB is down?")
+    return reply.status(500).send({ error: "Could not get user info" })
   }
-}
-
-// Declares reassignable variables outside the block, which is undesirable
-async function readData(filename) {
-  let fileContent
-  let json
-
-  try {
-    fileContent = await fs.readFile(filename, "utf8")
-  } catch (error) {
-    handleFileError(error)
-    return
-  }
-
-  try {
-    json = JSON.parse(fileContent)
-  } catch (error) {
-    handleJsonError(error)
-    return
-  }
-
-  return json.data
 }
 ```
+
+With the proposed `Try Expressions`, the same function can be rewritten as:
+
+```js
+async function handle(request, reply) {
+  const userInfo = try await cache.getUserInfo(request.id)
+
+  if (!userInfo.ok) {
+    logger.error(error, "Maybe DB is down?")
+    return reply.status(500).send({ error: "Could not get user info" })
+  }
+
+  const posts = try await db.getPosts(userInfo.authorId)
+
+  if (!posts.ok) {
+    logger.error(error, "Anonymous user behavior not implemented yet")
+    return reply.status(500).send({ error: "Could not get posts" })
+  }
+
+  const comments =try await db.getComments(posts.map((post) => post.id))
+
+  if (!comments.ok) {
+    logger.error(error, "Posts without comments not implemented yet")
+    return reply.status(500).send({ error: "Could not get comments" })
+  }
+
+  // No need for reassignable variables or nested try/catch blocks
+
+  // Do something with comments before returning
+  return reply.send({ userInfo: userInfo.value, posts: posts.value, comments: comments.value })
+}
+```
+
+The `try` expressions provide significant flexibility and arguably result in more readable code. A `try` expression is a statement that can be used wherever a statement is expected, allowing for concise and readable error handling.
+
+<br />
+
+## What This Proposal Does Not Aim to Solve
+
+1. **Strict Type Enforcement for Errors**: The `throw` statement in JavaScript can throw any type of value. This proposal does not impose type safety on error handling and will not introduce types into the language. For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _(This also means no generic error type for [Result](#result-class))_
+
+2. **Automatic Error Handling**: While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
+
+<br />
+
+## Try Operator
+
+The `try` operator consists of the `try` keyword followed by an expression. Its result is an instance of the [`Result`](#result-class).
+
+### Rules for `try` expressions:
+
+1. **`try` expressions cannot be inlined**, similar to `throw`, `return`, and `await`.
+
+   ```js
+   array.map((fn) => try fn()).filter((result) => result.ok) // Syntax error!
+   ```
+
+2. **Expressions are evaluated in a self-contained `try/catch` block**.
+
+   ```js
+   const result = try expr1
+   ```
+
+   This is "equivalent" to:
+
+   ```js
+   let result
+   try {
+     result = Result.ok(expr1)
+   } catch (error) {
+     result = Result.error(error)
+   }
+   ```
+
+3. **Any valid expression can be used**, but `try` expressions cannot nest.
+
+   ```js
+   const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
+   ```
+
+   This is "equivalent" to:
+
+   ```js
+   let result
+   try {
+     result = Result.ok(
+       data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
+     )
+   } catch (error) {
+     result = Result.error(error)
+   }
+   ```
+
+4. **`try await` follows the same rules as other expressions**.
+
+   ```js
+   const result = try await fetch("https://api.example.com/data")
+   ```
+
+   This is "equivalent" to:
+
+   ```js
+   let result
+   try {
+     result = Result.ok(await fetch("https://api.example.com/data"))
+   } catch (error) {
+     result = Result.error(error)
+   }
+   ```
+
+5. **Statements like `throw` and `using` are not valid in `try` expressions**.
+
+   ```js
+   const result = try throw new Error("Something went wrong") // Syntax error!
+   const result = try using resource = new Resource() // Syntax error!
+   ```
+
+   This is because their "equivalent" would also result in a syntax error:
+
+   ```js
+   let result
+   try {
+     result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
+   } catch (error) {
+     result = Result.error(error)
+   }
+   ```
+
+6. **`try` Will Never Throw**
+
+   The `try` operator ensures that no error escapes its scope:
+
+   ```js
+   const [ok, error, result] = try some.thing()
+   ```
+
+   Regardless of the type of error that might occur, `try` will catch it. For example:
+
+   - If `some` is `undefined`.
+   - If `thing` is not a function.
+   - If accessing the `thing` property on `some` throws an error.
+   - Any other exception that can arise on that line of code.
+
+   All potential errors are safely caught and encapsulated within the `try` expression.
+
+7. **Parentheses Required for Object Literals in `try` Expressions**
+
+   When using `try` with an object literal, the literal must be enclosed in parentheses:
+
+   ```js
+   const result = try ({ data: await work() })
+   ```
+
+   This behavior mirrors how JavaScript handles arrow functions:
+
+<!-- prettier-ignore -->
+   ```js
+   const c = () => ({ d: 1 }) // `c` is of type () => { d: number }
+   const a = () => { b: 1 } // `b` is interpreted as a label, and `a` is of type () => void
+   ```
+
+<br />
+
+## Result class
+
+> Please see [`polyfill.d.ts`](./polyfill.d.ts) and [`polyfill.js`](./polyfill.js) for a basic implementation of the `Result` class.
+
+The `Result` class represents the form of the value returned by the `try` operator.
+
+1. **Structure of a `Result` Instance**  
+   A `Result` instance contains three properties:
+
+   - **`ok`**: A boolean indicating whether the expression executed successfully.
+   - **`error`**: The error thrown during execution, or `undefined` if no error occurred.
+   - **`value`**: The data returned from the execution, or `undefined` if an error occurred.
+
+   Example usage:
+
+   ```js
+   const result = try something()
+
+   if (result.ok) {
+     console.log(result.value)
+   } else {
+     console.error(result.error)
+   }
+   ```
+
+2. **Iterable Behavior**  
+   A `Result` instance is iterable, enabling destructuring and different naming per case:
+
+   ```js
+   const [success, validationError, user] = try User.parse(myJson)
+   ```
+
+3. **Manual Creation of a `Result`**  
+   You can also create a `Result` instance manually using its constructor or static methods:
+
+   ```js
+   // Creating a successful result
+   const result = new Result(true, undefined, value)
+   const result = Result.ok(value)
+
+   // Creating an error result
+   const result = new Result(false, error)
+   const result = Result.error(error)
+   ```
 
 <br />
 
 ## Why Not `data` First?
 
-In Go, the convention is to place the data variable first, and you might wonder why we don't follow the same approach in JavaScript. In Go, this is the standard way to call a function. However, in JavaScript, we already have the option to use `const data = fn()` and choose to ignore the error, which is precisely the issue we are trying to address.
+In Go, the convention is to place the data variable first, and you might wonder why we don't follow the same approach in JavaScript. In Go, this is the standard way to call a function. However, in JavaScript, we already have the option to use `const data = fn()` and choose to ignore the error, which is precisely the issue this proposal seeks to address.
 
-If someone is using `?=` as their assignment operator, it is because they want to ensure that they handle errors and avoid forgetting them. Placing the data first would contradict this principle, as it prioritizes the result over error handling.
+If someone is using the `try` expression, it is because they want to ensure they handle errors and avoid neglecting them. Placing the data first would undermine this principle by prioritizing the result over error handling.
 
 ```ts
-// ignores errors!
+// This line doesn't acknowledge the possibility of errors being thrown
 const data = fn()
 
-// Look how simple it is to forget to handle the error
-const [data] ?= fn()
+// It's easy to forget to add a second error parameter
+const [data] = try fn()
 
-// This is the way to go
-const [error, data] ?= fn()
+// This approach gives all clues to the reader about the 2 possible states
+const [ok, error, data] = try fn()
 ```
 
-If you want to suppress the error (which is **different** from ignoring the possibility of a function throwing an error), you can simply do the following:
+If you want to suppress the error (which is **different** from ignoring the possibility of a function throwing an error), you can do the following:
 
 ```ts
-// This suppresses the error (ignores it and doesn't re-throw it)
-const [, data] ?= fn()
+// This suppresses a possible error (Ignores and doesn't re-throw)
+const [ok, _, data] = try fn()
 ```
 
-This approach is much more explicit and readable because it acknowledges that there might be an error, but indicates that you do not care about it.
+This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
 
-The above method is also known as "try-catch calaboca" (a Brazilian term) and can be rewritten as:
+The above method, often referred to as "try-catch calaboca" (a Brazilian term), can also be written as:
 
 ```ts
 let data
@@ -381,135 +325,88 @@ try {
 } catch {}
 ```
 
-Complete discussion about this topic at https://github.com/arthurfiorette/proposal-safe-assignment-operator/issues/13 if the reader is interested.
+A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/try-expressions/issues/13) for those interested.
 
 <br />
 
-## Polyfilling
+## The Need for an `ok` Value
 
-This proposal can be polyfilled using the code provided at [`polyfill.js`](./polyfill.js).
+The idea of `throw x` doing _anything_ other than throwing `x` is inherently flawed. Wrapping the `error` in an object disregards this principle and introduces unnecessary ambiguity.
 
-However, the `?=` operator itself cannot be polyfilled directly. When targeting older JavaScript environments, a post-processor should be used to transform the `?=` operator into the corresponding `[Symbol.result]` calls.
+Consider the following pseudocode, which might seem harmless but is actually risky:
 
-```ts
-const [error, data] ?= await asyncAction(arg1, arg2)
-// should become
-const [error, data] = await asyncAction[Symbol.result](arg1, arg2)
-```
-
-```ts
-const [error, data] ?= action()
-// should become
-const [error, data] = action[Symbol.result]()
-```
-
-```ts
-const [error, data] ?= obj
-// should become
-const [error, data] = obj[Symbol.result]()
-```
-
-<br />
-
-## Using `?=` with Functions and Objects Without `Symbol.result`
-
-If the function or object does not implement a `Symbol.result` method, the `?=` operator should throw a `TypeError`.
-
-<br />
-
-## Comparison
-
-The `?=` operator and the `Symbol.result` proposal do not introduce new logic to the language. In fact, everything this proposal aims to achieve can already be accomplished with current, though _verbose and error-prone_, language features.
-
-```ts
-try {
-  // try expression
-} catch (error) {
-  // catch code
-}
-
-// or
-
-promise // try expression
-  .catch((error) => {
-    // catch code
-  })
-```
-
-is equivalent to:
-
-```ts
-const [error, data] ?= expression
-
-if (error) {
-  // catch code
-} else {
-  // try code
-}
-```
-
-<br />
-
-## Similar Prior Art
-
-This pattern is architecturally present in many languages:
-
-- **Go**
-  - [Error Handling](https://go.dev/blog/error-handling-and-go)
-- **Rust**
-  - [`?` Operator](https://doc.rust-lang.org/rust-by-example/error/result/enter_question_mark.html#introducing-)
-  - [`Result` Type](https://doc.rust-lang.org/rust-by-example/error/result.html#result)
-- **Swift**
-  - [The `try?` Operator](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/errorhandling/#Converting-Errors-to-Optional-Values)
-- **Zig**
-  - [`try` Keyword](https://ziglang.org/documentation/0.10.1/#try)
-- _And many others..._
-
-While this proposal cannot offer the same level of type safety or strictness as these languages—due to JavaScript's dynamic nature and the fact that the `throw` statement can throw anything—it aims to make error handling more consistent and manageable.
-
-<br />
-
-## What This Proposal Does Not Aim to Solve
-
-1. **Strict Type Enforcement for Errors**: The `throw` statement in JavaScript can throw any type of value. This proposal does not impose type safety on error handling and will not introduce types into the language. It also will not be extended to TypeScript. For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
-
-2. **Automatic Error Handling**: While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors; the proposal simply aims to make this process easier and more consistent.
-
-<br />
-
-## Current Limitations
-
-While this proposal is still in its early stages, we are aware of several limitations and areas that need further development:
-
-1. **Nomenclature for `Symbol.result` Methods**: We need to establish a term for objects and functions that implement `Symbol.result` methods. Possible terms include _Resultable_ or _Errorable_, but this needs to be defined.
-
-2. **Usage of `this`**: The behavior of `this` within the context of `Symbol.result` has not yet been tested or documented. This is an area that requires further exploration and documentation.
-
-3. **Handling `finally` Blocks**: There are currently no syntax improvements for handling `finally` blocks. However, you can still use the `finally` block as you normally would:
-
-```ts
-try {
-  // try code
-} catch {
-  // catch errors
-} finally {
-  // finally code
-}
-
-// Needs to be done as follows
-
-const [error, data] ?= action()
-
-try {
-  if (error) {
-    // catch errors
-  } else {
-    // try code
+```js
+function doWork() {
+  if (check) {
+    throw createException(Errors.SOMETHING_WENT_WRONG)
   }
-} finally {
-  // finally code
+
+  return work()
+}
+
+const [error, data] = try doWork()
+
+if (!error) {
+  user.send(data)
 }
 ```
+
+There is no guarantee that `createException` always returns an exception. Someone could even mistakenly write `throw null` or `throw undefined`, both of which are valid but undesired JavaScript code.
+
+Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
+
+For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/try-expressions/issues/30).
+
+<br />
+
+## Caller's Approach
+
+JavaScript has evolved over decades, with countless libraries and codebases built on top of one another. Any new feature that does not consider compatibility with existing code risks negatively impacting its adoption, as refactoring functional, legacy code simply to accommodate a new feature is often an unjustifiable cost.
+
+With that in mind, improvements in error handling can be approached in two ways:
+
+1. **At the caller's level**:
+
+   ```js
+   try {
+     const result = work()
+   } catch (error) {
+     console.error(error)
+   }
+   ```
+
+2. **At the callee's level**:
+
+   ```js
+   function work() {
+     // Performs some operation
+
+     if (error) {
+       return { status: "error", error }
+     } else {
+       return { status: "ok", data }
+     }
+   }
+   ```
+
+Both approaches achieve the same goal, but the second one requires refactoring all implementations into a new format. This is how languages like Go and Rust handle errors, returning a tuple of an error and a value or a `Result` object, respectively. While the callee-based approach can arguably be better, it succeeded in those languages because it was adopted from the very beginning, rather than introduced as a later addition.
+
+This proposal accounts for this by moving the transformation of errors into values to the **caller** level, preserving the familiar semantics and placement of `try/catch`. This approach ensures backward compatibility with existing code.
+
+Breaking compatibility is unacceptable for platforms like Node.js or libraries. Consequently, a callee-based approach would likely never be adopted for functions like `fetch` or `fs.readFile`, as it would disrupt existing codebases. Ironically, these are precisely the kinds of functions where improved error handling is most needed.
+
+<br />
+
+## Why a Proposal?
+
+A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
+
+Optional chaining and nullish coalescing are examples of features that could have remained external libraries (e.g., Lodash's `_.get()` for optional chaining and `_.defaultTo()` for nullish coalescing). However, when implemented natively, their usage scales exponentially and becomes a natural part of developers’ workflows. This arguably improves code quality and productivity.
+
+By providing such basic conveniences natively, we:
+
+- Increase consistency across codebases (many NPM packages already implement variations of this proposal, each with its own API and lack of standardization).
+- Reduce code complexity, making it more readable and less error-prone.
 
 <br />
 
@@ -523,18 +420,16 @@ This proposal is in its early stages, and we welcome your input to help refine i
 
 ## Authors
 
-- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([Twitter](https://x.com/arthurfiorette))</sub>
+- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
 
 <br />
 
 ## Inspiration
 
-## Inspiration
-
 - [This tweet from @LeaVerou](https://x.com/LeaVerou/status/1819381809773216099)
+- The frequent oversight of error handling in JavaScript code.
 - [Effect TS Error Management](https://effect.website/docs/guides/error-management)
 - The [`tuple-it`](https://www.npmjs.com/package/tuple-it) npm package, which introduces a similar concept but modifies the `Promise` and `Function` prototypes—an approach that is less ideal.
-- The frequent oversight of error handling in JavaScript code.
 
 <br />
 
