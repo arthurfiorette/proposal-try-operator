@@ -3,36 +3,203 @@
 <h1>ECMAScript Try Expressions</h1>
 
 > [!WARNING]  
-> After a log of discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Expressions`.
+> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Expressions`.
 
 <br />
 
 <div align="center">
-  <img src="./assets/banner.png" alt="ECMAScript Try Expressions Proposal" />
+  <img src="./assets/banner.png" width="80%" alt="ECMAScript Try Expressions Proposal" />
 </div>
 
 <br />
 
-This proposal intends to address a surging issue regarding the uncommon ergonomics of maintaining subsequent _(and possible nested)_ `try/catch` blocks required to correctly execute operations that might fail at any point.
+This proposal aims to address the ergonomic challenges of managing multiple, often nested, `try/catch` blocks that are necessary for handling operations that may fail at various points.
 
-Only the `catch (error) {}` part is the actual control flow and no program state requires to be within a `try {}` block. Forcing the successful flow to be inside a nested block is not ideal.
+Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
 <hr />
 <br />
+<br />
 
-- [Why Not `data` First?](#why-not-data-first)
-- [Polyfilling](#polyfilling)
-- [Using `?=` with Functions and Objects Without `Symbol.result`](#using--with-functions-and-objects-without-symbolresult)
-- [Comparison](#comparison)
-- [Similar Prior Art](#similar-prior-art)
-- [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
-- [Current Limitations](#current-limitations)
-- [Help Us Improve This Proposal](#help-us-improve-this-proposal)
-- [Authors](#authors)
-- [Inspiration](#inspiration)
-- [License](#license)
+## Try/Catch Is Not Enough
+
+<!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 :) -->
+
+The `try {}` block is often redundant, as its scoping lacks meaningful conceptual significance. It generally acts more as a code annotation than a genuine control flow construct. Unlike true control flow blocks, no program state exists that requires being confined to a `try {}` block.
+
+Conversely, the `catch {}` block **is** genuine control flow, making its scoping relevant and meaningful. According to Oxford Languages, an exception is defined as:
+
+> a person or thing that is excluded from a general statement or does not follow a rule.
+
+Since `catch` handles exceptions, it is logical to encapsulate exception-handling logic in a block to exclude it from the general program flow.
+
+The pseudocode below illustrates the lack of value in nesting the success path within a code block:
+
+```js
+async function handle(request, reply) {
+  try {
+    const userInfo = await cache.getUserInfo(request.id)
+
+    try {
+      const posts = await db.getPosts(userInfo.authorId)
+
+      let comments
+
+      // Variables used after error handling must be declared outside the block
+      try {
+        comments = await db.getComments(posts.map((post) => post.id))
+      } catch (error) {
+        logger.error(error, "Posts without comments not implemented yet")
+        return reply.status(500).send({ error: "Could not get comments" })
+      }
+
+      // Do something with comments before returning
+      return reply.send({ userInfo, posts, comments })
+    } catch (error) {
+      logger.error(error, "Anonymous user behavior not implemented yet")
+      return reply.status(500).send({ error: "Could not get posts" })
+    }
+  } catch (error) {
+    logger.error(error, "Maybe DB is down?")
+    return reply.status(500).send({ error: "Could not get user info" })
+  }
+}
+```
+
+With the proposed `Try Expressions`, the same function can be rewritten as:
+
+```js
+async function handle(request, reply) {
+  const userInfo = try await cache.getUserInfo(request.id)
+
+  if (!userInfo.ok) {
+    logger.error(error, "Maybe DB is down?")
+    return reply.status(500).send({ error: "Could not get user info" })
+  }
+
+  const posts = try await db.getPosts(userInfo.authorId)
+
+  if (!posts.ok) {
+    logger.error(error, "Anonymous user behavior not implemented yet")
+    return reply.status(500).send({ error: "Could not get posts" })
+  }
+
+  const comments =try await db.getComments(posts.map((post) => post.id))
+
+  if (!comments.ok) {
+    logger.error(error, "Posts without comments not implemented yet")
+    return reply.status(500).send({ error: "Could not get comments" })
+  }
+
+  // No need for reassignable variables or nested try/catch blocks
+
+  // Do something with comments before returning
+  return reply.send({ userInfo, posts, comments })
+}
+```
+
+The `try` expressions provide significant flexibility and arguably result in more readable code. A `try` expression is a statement that can be used wherever a statement is expected, allowing for concise and readable error handling.
 
 <br />
+
+## Try Operator
+
+The `try` operator consists of the `try` keyword followed by an expression. Its result is an instance of the [`Result`](#result-class).
+
+### Rules for `try` expressions:
+
+1. **`try` behaves like `const`**: Reassignment is not allowed.
+
+   ```js
+   try result = await fetch("https://api.example.com/data")
+   try [ok, error, data] = await fetch("https://api.example.com/data")
+
+   result = something() // Syntax error!
+   error = new Error("Something went wrong") // Syntax error!
+   ```
+
+2. **`try` expressions cannot be inlined**, similar to `throw`, `return`, and `await`.
+
+   ```js
+   array.map((fn) => try fn()).filter((result) => result.ok) // Syntax error!
+   ```
+
+3. **Expressions are evaluated in a self-contained `try/catch` block**.
+
+   ```js
+   const result = try expr1
+   ```
+
+   This is "equivalent" to:
+
+   ```js
+   let result
+   try {
+     result = Result.ok(expr1)
+   } catch (error) {
+     result = Result.error(error)
+   }
+   ```
+
+4. **Any valid expression can be used**, but `try` expressions cannot nest.
+
+   ```js
+   const result = try data?.somePropertyAccessor.anotherFunction?.(await someData()).andAnotherOne()
+   ```
+
+   This is "equivalent" to:
+
+   ```js
+   let result
+   try {
+     result = Result.ok(
+       data?.somePropertyAccessor
+         .anotherFunction?.(await someData())
+         .andAnotherOne()
+     )
+   } catch (error) {
+     result = Result.error(error)
+   }
+   ```
+
+5. **`try await` follows the same rules as other expressions**.
+
+   ```js
+   let result = try await fetch("https://api.example.com/data")
+   ```
+
+   This is "equivalent" to:
+
+   ```js
+   let result
+   try {
+     result = Result.ok(await fetch("https://api.example.com/data"))
+   } catch (error) {
+     result = Result.error(error)
+   }
+   ```
+
+6. **Statements like `throw` and `using` are not valid in `try` expressions**.
+
+   ```js
+   let result = try throw new Error("Something went wrong") // Syntax error!
+   let result = try using resource = new Resource() // Syntax error!
+   ```
+
+   This is because their "equivalent" would also result in a syntax error:
+
+   ```js
+   let result
+   try {
+     result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
+   } catch (error) {
+     result = Result.error(error)
+   }
+   ```
+
+<br />
+
+## Result class
 
 <!-- ## Motivation
 
@@ -121,7 +288,7 @@ function example() {
 const [error, result] ?= example() // Function.prototype also implements Symbol.result
 // const [error, result] = example[Symbol.result]()
 
-// error is Error('123')
+// error is Error("123")
 ```
 
 The `Symbol.result` method must return a tuple, where the first element represents the error and the second element represents the result.
@@ -147,7 +314,7 @@ const [error, data] ?= obj
 
 ```ts
 function action() {
-  return 'data'
+  return "data"
 }
 
 const [error, data] ?= action(argument)
@@ -201,7 +368,7 @@ const obj = {
 const [error, data] ?= obj
 // const [error, data] = obj[Symbol.result]()
 
-// error is  Error('string')
+// error is  Error("string")
 ```
 
 These behaviors facilitate handling various situations involving promises or objects with `Symbol.result` methods:
@@ -224,7 +391,7 @@ const [error, data] ?= await promise
 // const [error, data] = await promise[Symbol.result]()
 ```
 
-You may have noticed that `await` and `?=` can be used together, and that's perfectly fine. Due to the [Recursive Handling](#recursive-handling) feature, there are no issues with combining them in this way.
+You may have noticed that `await` and `?=` can be used together, and that"s perfectly fine. Due to the [Recursive Handling](#recursive-handling) feature, there are no issues with combining them in this way.
 
 ```ts
 const [error, data] ?= await getPromise()
@@ -233,7 +400,7 @@ const [error, data] ?= await getPromise()
 
 The execution will follow this order:
 
-1. `getPromise[Symbol.result]()` might throw an error when called (if it's a synchronous function returning a promise).
+1. `getPromise[Symbol.result]()` might throw an error when called (if it"s a synchronous function returning a promise).
 2. If **an** error is thrown, it will be assigned to `error`, and execution will halt.
 3. If **no** error is thrown, the result will be assigned to `data`. Since `data` is a promise and promises have a `Symbol.result` method, it will be handled recursively.
 4. If the promise **rejects**, the error will be assigned to `error`, and execution will stop.
@@ -273,64 +440,9 @@ The `using` management flow is applied only when `error` is `null` or `undefined
 
 <br />
 
-## Try/Catch Is Not Enough
-
-<!-- credits to https://x.com/LeaVerou/status/1819381809773216099 --/>
-
-The `try {}` block is rarely useful, as its scoping lacks conceptual significance. It often functions more as a code annotation rather than a control flow construct. Unlike control flow blocks, there is no program state that is meaningful only within a `try {}` block.
-
-In contrast, the `catch {}` block **is** actual control flow, and its scoping is meaningful and relevant.
-
-Using `try/catch` blocks has **two main syntax problems**:
-
-```js
-// Nests 1 level for each error handling block
-async function readData(filename) {
-  try {
-    const fileContent = await fs.readFile(filename, "utf8")
-
-    try {
-      const json = JSON.parse(fileContent)
-
-      return json.data
-    } catch (error) {
-      handleJsonError(error)
-      return
-    }
-  } catch (error) {
-    handleFileError(error)
-    return
-  }
-}
-
-// Declares reassignable variables outside the block, which is undesirable
-async function readData(filename) {
-  let fileContent
-  let json
-
-  try {
-    fileContent = await fs.readFile(filename, "utf8")
-  } catch (error) {
-    handleFileError(error)
-    return
-  }
-
-  try {
-    json = JSON.parse(fileContent)
-  } catch (error) {
-    handleJsonError(error)
-    return
-  }
-
-  return json.data
-}
-```
-
-<br />
-
 ## Why Not `data` First?
 
-In Go, the convention is to place the data variable first, and you might wonder why we don't follow the same approach in JavaScript. In Go, this is the standard way to call a function. However, in JavaScript, we already have the option to use `const data = fn()` and choose to ignore the error, which is precisely the issue we are trying to address.
+In Go, the convention is to place the data variable first, and you might wonder why we don"t follow the same approach in JavaScript. In Go, this is the standard way to call a function. However, in JavaScript, we already have the option to use `const data = fn()` and choose to ignore the error, which is precisely the issue we are trying to address.
 
 If someone is using `?=` as their assignment operator, it is because they want to ensure that they handle errors and avoid forgetting them. Placing the data first would contradict this principle, as it prioritizes the result over error handling.
 
@@ -348,7 +460,7 @@ const [error, data] ?= fn()
 If you want to suppress the error (which is **different** from ignoring the possibility of a function throwing an error), you can simply do the following:
 
 ```ts
-// This suppresses the error (ignores it and doesn't re-throw it)
+// This suppresses the error (ignores it and doesn"t re-throw it)
 const [, data] ?= fn()
 ```
 
@@ -447,7 +559,7 @@ This pattern is architecturally present in many languages:
   - [`try` Keyword](https://ziglang.org/documentation/0.10.1/#try)
 - _And many others..._
 
-While this proposal cannot offer the same level of type safety or strictness as these languages—due to JavaScript's dynamic nature and the fact that the `throw` statement can throw anything—it aims to make error handling more consistent and manageable.
+While this proposal cannot offer the same level of type safety or strictness as these languages—due to JavaScript"s dynamic nature and the fact that the `throw` statement can throw anything—it aims to make error handling more consistent and manageable.
 
 <br />
 
@@ -455,7 +567,7 @@ While this proposal cannot offer the same level of type safety or strictness as 
 
 1. **Strict Type Enforcement for Errors**: The `throw` statement in JavaScript can throw any type of value. This proposal does not impose type safety on error handling and will not introduce types into the language. It also will not be extended to TypeScript. For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
 
-2. **Automatic Error Handling**: While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors; the proposal simply aims to make this process easier and more consistent.
+2. **Automatic Error Handling**: While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
 
 <br />
 

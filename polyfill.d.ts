@@ -11,7 +11,9 @@
 type ErrorObjectResult = { ok: false; error: unknown; value: null }
 
 /**
- * Error result type expressed as tuple. `error` type depends on `useUnknownInCatchVariables` tsconfig option
+ * Error result type expressed as tuple.
+ *
+ * - `error` type depends on `useUnknownInCatchVariables` tsconfig option
  */
 type ErrorTupleResult = [ok: false, error: unknown, value: null]
 
@@ -40,11 +42,26 @@ type ValueResult<V> = ValueObjectResult<V> & ValueTupleResult<V>
  */
 type Result<V> = ErrorResult | ValueResult<V>
 
-// Simple helper function to create a result object (not in the spec, but just for testing convenience)
-function result<V>(...tuple: ErrorTupleResult | ValueTupleResult<V>) {
-  return Object.assign(tuple, {
-    ok: tuple[0],
-    error: tuple[1],
-    value: tuple[2],
-  }) as Result<V>
+interface ResultConstructor {
+  /**
+   * Creates a result from a tuple
+   *
+   * @example
+   *
+   * new Result(true, null, 42)
+   * new Result(false, new Error('Something went wrong'))
+   */
+  new <V>(...args: ValueTupleResult<V> | ErrorTupleResult): Result<V>
+
+  /**
+   * Creates a result for a successful operation
+   */
+  ok<V>(value: V): Result<V>
+
+  /**
+   * Creates a result for a failed operation
+   */
+  error<V>(error: unknown): Result<V>
 }
+
+declare const Result: ResultConstructor
