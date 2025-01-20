@@ -1,14 +1,14 @@
 <br />
 
-<h1>ECMAScript Try Expression</h1>
+<h1>ECMAScript Try Expressions</h1>
 
 > [!WARNING]  
-> After a log of discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Expression`.
+> After a log of discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Expressions`.
 
 <br />
 
 <div align="center">
-  <img srg="./assets/logo.png" alt="ECMAScript Try Expression Proposal" />
+  <img srg="./assets/logo.png" alt="ECMAScript Try Expressions Proposal" />
 </div>
 
 <br />
@@ -363,7 +363,7 @@ try {
 } catch {}
 ```
 
-Complete discussion about this topic at https://github.com/arthurfiorette/try-expression/issues/13 if the reader is interested.
+Complete discussion about this topic at https://github.com/arthurfiorette/try-expressions/issues/13 if the reader is interested.
 
 <br />
 
