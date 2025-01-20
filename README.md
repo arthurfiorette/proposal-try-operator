@@ -217,6 +217,8 @@ try {
 }
 ```
 
+A detailed discussion about this topic is available at [GitHub Issue #54](https://github.com/arthurfiorette/proposal-try-statements/issues/54) for those interested.
+
 ### Never throws
 
 The `try` operator ensures that no error escapes its scope:
@@ -249,6 +251,8 @@ This behavior mirrors how JavaScript differentiates blocks and object literals:
     { a: 1 } // empty block with a label
    ({ a: 1 }) // object with a key `a` and a number `1`
    ```
+
+A detailed discussion about this topic is available at [GitHub Issue #55](https://github.com/arthurfiorette/proposal-try-statements/issues/55) for those interested.
 
 ### Result Can Be Safely Ignored for Void Operations
 
