@@ -210,6 +210,49 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
 
 ## Result class
 
+> Please see [`polyfill.d.ts`](./polyfill.d.ts) and [`polyfill.js`](./polyfill.js) for a basic implementation of the `Result` class.
+
+The `Result` class represents the form of the value returned by the `try` operator.
+
+1. **Structure of a `Result` Instance**  
+   A `Result` instance contains three properties:
+
+   - **`ok`**: A boolean indicating whether the expression executed successfully.
+   - **`error`**: The error thrown during execution, or `null` if no error occurred.
+   - **`value`**: The data returned from the execution, or `null` if an error occurred.
+
+   Example usage:
+
+   ```js
+   const result = try something()
+
+   if (result.ok) {
+     console.log(result.value)
+   } else {
+     console.error(result.error)
+   }
+   ```
+
+2. **Iterable Behavior**  
+   A `Result` instance is iterable, enabling destructuring and different naming per case:
+
+   ```js
+   const [success, validationError, user] = try User.parse(myJson)
+   ```
+
+3. **Manual Creation of a `Result`**  
+   You can also create a `Result` instance manually using its constructor or static methods:
+
+   ```js
+   // Creating a successful result
+   const result = new Result(true, null, value)
+   const result = Result.ok(value)
+
+   // Creating an error result
+   const result = new Result(false, error)
+   const result = Result.error(error)
+   ```
+
 <br />
 
 ## Why Not `data` First?
@@ -220,20 +263,20 @@ If someone is using the `try` expression, it is because they want to ensure they
 
 ```ts
 // Ignores errors!
-const data = fn();
+const data = fn()
 
 // It's easy to forget to handle the error
-const [data] = try fn();
+const [data] = try fn()
 
 // This is the correct approach
-const [ok, error, data] = try fn();
+const [ok, error, data] = try fn()
 ```
 
 If you want to suppress the error (which is **different** from ignoring the possibility of a function throwing an error), you can do the following:
 
 ```ts
 // This suppresses the `ok` and `error` (ignores them and doesn’t re-throw)
-const [,, data] = try fn();
+const [,, data] = try fn()
 ```
 
 This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
@@ -260,16 +303,16 @@ Consider the following pseudocode, which might seem harmless but is actually ris
 ```js
 function doWork() {
   if (check) {
-    throw createException(Errors.SOMETHING_WENT_WRONG);
+    throw createException(Errors.SOMETHING_WENT_WRONG)
   }
 
-  return work();
+  return work()
 }
 
-const [error, data] = try doWork();
+const [error, data] = try doWork()
 
 if (!error) {
-  user.send(data);
+  user.send(data)
 }
 ```
 
