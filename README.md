@@ -21,9 +21,12 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 <br />
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
+- [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
 - [Try Operator](#try-operator)
   - [Rules for `try` expressions:](#rules-for-try-expressions)
 - [Result class](#result-class)
+- [Why Not `data` First?](#why-not-data-first)
+- [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Authors](#authors)
 - [Inspiration](#inspiration)
@@ -112,29 +115,27 @@ The `try` expressions provide significant flexibility and arguably result in mor
 
 <br />
 
+## What This Proposal Does Not Aim to Solve
+
+1. **Strict Type Enforcement for Errors**: The `throw` statement in JavaScript can throw any type of value. This proposal does not impose type safety on error handling and will not introduce types into the language. For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _(This also means no generic error type for [Result](#result-class))_
+
+2. **Automatic Error Handling**: While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
+
+<br />
+
 ## Try Operator
 
 The `try` operator consists of the `try` keyword followed by an expression. Its result is an instance of the [`Result`](#result-class).
 
 ### Rules for `try` expressions:
 
-1. **`try` behaves like `const`**: Reassignment is not allowed.
-
-   ```js
-   try result = await fetch("https://api.example.com/data")
-   try [ok, error, data] = await fetch("https://api.example.com/data")
-
-   result = something() // Syntax error!
-   error = new Error("Something went wrong") // Syntax error!
-   ```
-
-2. **`try` expressions cannot be inlined**, similar to `throw`, `return`, and `await`.
+1. **`try` expressions cannot be inlined**, similar to `throw`, `return`, and `await`.
 
    ```js
    array.map((fn) => try fn()).filter((result) => result.ok) // Syntax error!
    ```
 
-3. **Expressions are evaluated in a self-contained `try/catch` block**.
+2. **Expressions are evaluated in a self-contained `try/catch` block**.
 
    ```js
    const result = try expr1
@@ -151,10 +152,10 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
    }
    ```
 
-4. **Any valid expression can be used**, but `try` expressions cannot nest.
+3. **Any valid expression can be used**, but `try` expressions cannot nest.
 
    ```js
-   const result = try data?.somePropertyAccessor.anotherFunction?.(await someData()).andAnotherOne()
+   const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
    ```
 
    This is "equivalent" to:
@@ -163,16 +164,14 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
    let result
    try {
      result = Result.ok(
-       data?.somePropertyAccessor
-         .anotherFunction?.(await someData())
-         .andAnotherOne()
+       data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
      )
    } catch (error) {
      result = Result.error(error)
    }
    ```
 
-5. **`try await` follows the same rules as other expressions**.
+4. **`try await` follows the same rules as other expressions**.
 
    ```js
    let result = try await fetch("https://api.example.com/data")
@@ -189,7 +188,7 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
    }
    ```
 
-6. **Statements like `throw` and `using` are not valid in `try` expressions**.
+5. **Statements like `throw` and `using` are not valid in `try` expressions**.
 
    ```js
    let result = try throw new Error("Something went wrong") // Syntax error!
@@ -210,6 +209,77 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
 <br />
 
 ## Result class
+
+<br />
+
+## Why Not `data` First?
+
+In Go, the convention is to place the data variable first, and you might wonder why we don't follow the same approach in JavaScript. In Go, this is the standard way to call a function. However, in JavaScript, we already have the option to use `const data = fn()` and choose to ignore the error, which is precisely the issue this proposal seeks to address.
+
+If someone is using the `try` expression, it is because they want to ensure they handle errors and avoid neglecting them. Placing the data first would undermine this principle by prioritizing the result over error handling.
+
+```ts
+// Ignores errors!
+const data = fn();
+
+// It's easy to forget to handle the error
+const [data] = try fn();
+
+// This is the correct approach
+const [ok, error, data] = try fn();
+```
+
+If you want to suppress the error (which is **different** from ignoring the possibility of a function throwing an error), you can do the following:
+
+```ts
+// This suppresses the `ok` and `error` (ignores them and doesn’t re-throw)
+const [,, data] = try fn();
+```
+
+This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
+
+The above method, often referred to as "try-catch calaboca" (a Brazilian term), can also be written as:
+
+```ts
+let data
+try {
+  data = fn()
+} catch {}
+```
+
+A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/try-expressions/issues/13) for those interested.
+
+<br />
+
+## The Need for an `ok` Value
+
+The idea of `throw x` doing _anything_ other than throwing `x` is inherently flawed. Wrapping the `error` in an object disregards this principle and introduces unnecessary ambiguity.
+
+Consider the following pseudocode, which might seem harmless but is actually risky:
+
+```js
+function doWork() {
+  if (check) {
+    throw createException(Errors.SOMETHING_WENT_WRONG);
+  }
+
+  return work();
+}
+
+const [error, data] = try doWork();
+
+if (!error) {
+  user.send(data);
+}
+```
+
+There is no guarantee that `createException` always returns an exception. For example, someone could mistakenly write `throw null` or `throw undefined`, both of which are valid but undesired JavaScript code.
+
+Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
+
+For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/try-expressions/issues/30).
+
+<br />
 
 <!-- ## Motivation
 
@@ -450,44 +520,7 @@ The `using` management flow is applied only when `error` is `null` or `undefined
 
 <br />
 
-## Why Not `data` First?
 
-In Go, the convention is to place the data variable first, and you might wonder why we don"t follow the same approach in JavaScript. In Go, this is the standard way to call a function. However, in JavaScript, we already have the option to use `const data = fn()` and choose to ignore the error, which is precisely the issue we are trying to address.
-
-If someone is using `?=` as their assignment operator, it is because they want to ensure that they handle errors and avoid forgetting them. Placing the data first would contradict this principle, as it prioritizes the result over error handling.
-
-```ts
-// ignores errors!
-const data = fn()
-
-// Look how simple it is to forget to handle the error
-const [data] ?= fn()
-
-// This is the way to go
-const [error, data] ?= fn()
-```
-
-If you want to suppress the error (which is **different** from ignoring the possibility of a function throwing an error), you can simply do the following:
-
-```ts
-// This suppresses the error (ignores it and doesn"t re-throw it)
-const [, data] ?= fn()
-```
-
-This approach is much more explicit and readable because it acknowledges that there might be an error, but indicates that you do not care about it.
-
-The above method is also known as "try-catch calaboca" (a Brazilian term) and can be rewritten as:
-
-```ts
-let data
-try {
-  data = fn()
-} catch {}
-```
-
-Complete discussion about this topic at https://github.com/arthurfiorette/try-expressions/issues/13 if the reader is interested.
-
-<br />
 
 ## Polyfilling
 
@@ -573,13 +606,7 @@ While this proposal cannot offer the same level of type safety or strictness as 
 
 <br />
 
-## What This Proposal Does Not Aim to Solve
 
-1. **Strict Type Enforcement for Errors**: The `throw` statement in JavaScript can throw any type of value. This proposal does not impose type safety on error handling and will not introduce types into the language. It also will not be extended to TypeScript. For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
-
-2. **Automatic Error Handling**: While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
-
-<br />
 
 ## Current Limitations
 
