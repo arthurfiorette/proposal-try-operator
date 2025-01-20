@@ -23,7 +23,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
 - [Try Operator](#try-operator)
-  - [Rules for `try` expressions:](#rules-for-try-expressions)
+  - [Rules for `try` expressions:](#rules-for-proposal-try-expressions)
 - [Result class](#result-class)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
@@ -325,7 +325,7 @@ try {
 } catch {}
 ```
 
-A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/try-expressions/issues/13) for those interested.
+A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/proposal-try-expressions/issues/13) for those interested.
 
 <br />
 
@@ -355,7 +355,7 @@ There is no guarantee that `createException` always returns an exception. Someon
 
 Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
 
-For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/try-expressions/issues/30).
+For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-expressions/issues/30).
 
 <br />
 
