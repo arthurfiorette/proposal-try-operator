@@ -27,6 +27,8 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Result class](#result-class)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
+- [Caller's Approach](#callers-approach)
+- [Why a Proposal?](#why-a-proposal)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Authors](#authors)
 - [Inspiration](#inspiration)
@@ -338,6 +340,57 @@ There is no guarantee that `createException` always returns an exception. For ex
 Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
 
 For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/try-expressions/issues/30).
+
+<br />
+
+## Caller's Approach
+
+JavaScript has evolved over decades, with countless libraries and codebases built on top of one another. Any new feature that does not consider compatibility with existing code risks negatively impacting its adoption, as refactoring functional, legacy code simply to accommodate a new feature is often an unjustifiable cost.
+
+With that in mind, improvements in error handling can be approached in two ways:
+
+1. **At the caller's level**:
+
+   ```js
+   try {
+     const result = work()
+   } catch (error) {
+     console.error(error)
+   }
+   ```
+
+2. **At the callee's level**:
+
+   ```js
+   function work() {
+     // Performs some operation
+
+     if (error) {
+       return { status: "error", error }
+     } else {
+       return { status: "ok", data }
+     }
+   }
+   ```
+
+Both approaches achieve the same goal, but the second one requires refactoring all implementations into a new format. This is how languages like Go and Rust handle errors, returning a tuple of an error and a value or a `Result` object, respectively. While the callee-based approach can arguably be better, it succeeded in those languages because it was adopted from the very beginning, rather than introduced as a later addition.
+
+This proposal accounts for this by moving the transformation of errors into values to the **caller** level, preserving the familiar semantics and placement of `try/catch`. This approach ensures backward compatibility with existing code.
+
+Breaking compatibility is unacceptable for platforms like Node.js or libraries. Consequently, a callee-based approach would likely never be adopted for functions like `fetch` or `fs.readFile`, as it would disrupt existing codebases. Ironically, these are precisely the kinds of functions where improved error handling is most needed.
+
+<br />
+
+## Why a Proposal?
+
+A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
+
+Optional chaining and nullish coalescing are examples of features that could have remained external libraries (e.g., Lodash's `_.get()` for optional chaining and `_.defaultTo()` for nullish coalescing). However, when implemented natively, their usage scales exponentially and becomes a natural part of developers’ workflows. This arguably improves code quality and productivity.
+
+By providing such basic conveniences natively, we:
+
+- Increase consistency across codebases (many NPM packages already implement variations of this proposal, each with its own API and lack of standardization).
+- Reduce code complexity, making it more readable and less error-prone.
 
 <br />
 
