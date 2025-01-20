@@ -1,14 +1,16 @@
 <br />
 
-<h1>ECMAScript Try Expressions</h1>
+<h1>ECMAScript Try Statements</h1>
 
 > [!WARNING]  
-> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Expressions`.
+> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Statements`.
+>
+> _[Click here to view the original proposal](https://github.com/arthurfiorette/proposal-try-statements/tree/proposal-safe-assignment-operator)._
 
 <br />
 
 <div align="center">
-  <img src="./assets/banner.png" alt="ECMAScript Try Expressions Proposal" />
+  <img src="./assets/banner.png" alt="ECMAScript Try Statements Proposal" />
 </div>
 
 <br />
@@ -22,7 +24,15 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
-- [Try Operator](#try-operator)
+- [Try Statement](#try-statement)
+  - [Cannot be inlined.](#cannot-be-inlined)
+  - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
+  - [Any valid expression can be use](#any-valid-expression-can-be-use)
+    - [`await` is not an exception](#await-is-not-an-exception)
+  - [Statements are not expressions](#statements-are-not-expressions)
+  - [Never throws](#never-throws)
+  - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
+  - [Result Can Be Safely Ignored for Void Operations](#result-can-be-safely-ignored-for-void-operations)
 - [Result class](#result-class)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
@@ -80,7 +90,7 @@ async function handle(request, reply) {
 }
 ```
 
-With the proposed `Try Expressions`, the same function can be rewritten as:
+With the proposed `try` statement, the same function can be rewritten as:
 
 ```js
 async function handle(request, reply) {
@@ -112,7 +122,7 @@ async function handle(request, reply) {
 }
 ```
 
-The `try` expressions provide significant flexibility and arguably result in more readable code. A `try` expression is a statement that can be used wherever a statement is expected, allowing for concise and readable error handling.
+A `try` statement provide significant flexibility and arguably result in more readable code. A `try` statement is a statement that can be used wherever a statement is expected, allowing for concise and readable error handling.
 
 <br />
 
@@ -124,144 +134,152 @@ The `try` expressions provide significant flexibility and arguably result in mor
 
 <br />
 
-## Try Operator
+## Try Statement
 
 The `try` operator consists of the `try` keyword followed by an expression. Its result is an instance of the [`Result`](#result-class).
 
-1. **`try` expressions cannot be inlined**, similar to `throw`, `return`, and `await`.
+### Cannot be inlined.
 
-   ```js
-   array.map((fn) => try fn()).filter((result) => result.ok) // Syntax error!
-   ```
+Similar to `throw`, `return`, and `await`
 
-2. **Expressions are evaluated in a self-contained `try/catch` block**.
+```js
+array.map((fn) => try fn()).filter((result) => result.ok) // Syntax error!
+```
 
-   ```js
-   const result = try expr1
-   ```
+### Expressions are evaluated in a self-contained `try/catch` block
 
-   This is "equivalent" to:
+```js
+const result = try expr1
+```
 
-   ```js
-   let result
-   try {
-     result = Result.ok(expr1)
-   } catch (error) {
-     result = Result.error(error)
-   }
-   ```
+This is "equivalent" to:
 
-3. **Any valid expression can be used**, but `try` expressions cannot nest.
+```js
+let result
+try {
+  result = Result.ok(expr1)
+} catch (error) {
+  result = Result.error(error)
+}
+```
 
-   ```js
-   const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
-   ```
+### Any valid expression can be use
 
-   This is "equivalent" to:
+```js
+const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
+```
 
-   ```js
-   let result
-   try {
-     result = Result.ok(
-       data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
-     )
-   } catch (error) {
-     result = Result.error(error)
-   }
-   ```
+This is "equivalent" to:
 
-4. **`try await` follows the same rules as other expressions**.
+```js
+let result
+try {
+  result = Result.ok(
+    data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
+  )
+} catch (error) {
+  result = Result.error(error)
+}
+```
 
-   ```js
-   const result = try await fetch("https://api.example.com/data")
-   ```
+`try` cannot nest since its a statement.
 
-   This is "equivalent" to:
+#### `await` is not an exception
 
-   ```js
-   let result
-   try {
-     result = Result.ok(await fetch("https://api.example.com/data"))
-   } catch (error) {
-     result = Result.error(error)
-   }
-   ```
+```js
+const result = try await fetch("https://api.example.com/data")
+```
 
-5. **Statements like `throw` and `using` are not valid in `try` expressions**.
+This is "equivalent" to:
 
-   ```js
-   const result = try throw new Error("Something went wrong") // Syntax error!
-   const result = try using resource = new Resource() // Syntax error!
-   ```
+```js
+let result
+try {
+  result = Result.ok(await fetch("https://api.example.com/data"))
+} catch (error) {
+  result = Result.error(error)
+}
+```
 
-   This is because their "equivalent" would also result in a syntax error:
+### Statements are not expressions
 
-   ```js
-   let result
-   try {
-     result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
-   } catch (error) {
-     result = Result.error(error)
-   }
-   ```
+```js
+const result = try throw new Error("Something went wrong") // Syntax error!
+const result = try using resource = new Resource() // Syntax error!
+```
 
-6. **`try` Will Never Throw**
+This is because their "equivalent" would also result in a syntax error:
 
-   The `try` operator ensures that no error escapes its scope:
+```js
+let result
+try {
+  result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
+} catch (error) {
+  result = Result.error(error)
+}
+```
 
-   ```js
-   const [ok, error, result] = try some.thing()
-   ```
+A detailed discussion about this topic is available at [GitHub Issue #54](https://github.com/arthurfiorette/proposal-try-statements/issues/54) for those interested.
 
-   Regardless of the type of error that might occur, `try` will catch it. For example:
+### Never throws
 
-   - If `some` is `undefined`.
-   - If `thing` is not a function.
-   - If accessing the `thing` property on `some` throws an error.
-   - Any other exception that can arise on that line of code.
+The `try` operator ensures that no error escapes its scope:
 
-   All potential errors are safely caught and encapsulated within the `try` expression.
+```js
+const [ok, error, result] = try some.thing()
+```
 
-7. **Parentheses Required for Object Literals in `try` Expressions**
+Regardless of the type of error that might occur, `try` will catch it. For example:
 
-   When using `try` with an object literal, the literal must be enclosed in parentheses:
+- If `some` is `undefined`.
+- If `thing` is not a function.
+- If accessing the `thing` property on `some` throws an error.
+- Any other exception that can arise on that line of code.
 
-   ```js
-   const result = try ({ data: await work() })
-   ```
+All potential errors are safely caught and encapsulated within the `try` statements.
 
-   This behavior mirrors how JavaScript handles arrow functions:
+### Parenthesis Required for Object Literals
+
+When using `try` with an object literal, the literal must be enclosed in parenthesis:
+
+```js
+const result = try ({ data: await work() })
+```
+
+This behavior mirrors how JavaScript differentiates blocks and object literals:
 
 <!-- prettier-ignore -->
    ```js
-   const c = () => ({ d: 1 }) // `c` is of type () => { d: number }
-   const a = () => { b: 1 } // `b` is interpreted as a label, and `a` is of type () => void
+    { a: 1 } // empty block with a label
+   ({ a: 1 }) // object with a key `a` and a number `1`
    ```
 
-8. **Result Can Be Safely Ignored for Void Operations**
+A detailed discussion about this topic is available at [GitHub Issue #55](https://github.com/arthurfiorette/proposal-try-statements/issues/55) for those interested.
 
-   In scenarios where the successful result of a operation is not needed, it can be safely ignored:
+### Result Can Be Safely Ignored for Void Operations
 
-   ```js
-   function work() {
-     try fs.unlinkSync("temp.txt")
-   }
-   ```
+In scenarios where the successful result of a operation is not needed, it can be safely ignored:
 
-   This behavior aligns with common patterns, such as using `await` on asynchronous operations where the result is not utilized:
+```js
+function work() {
+  try fs.unlinkSync("temp.txt")
+}
+```
 
-   ```js
-   await fs.promises.unlink("temp.txt")
-   ```
+This behavior aligns with common patterns, such as using `await` on asynchronous operations where the result is not utilized:
 
-   While it is valid to ignore the result, tools like TypeScript ESLint may introduce similar rules, such as [`no-floating-promises`](https://typescript-eslint.io/rules/no-floating-promises/), to encourage developers to explicitly indicate that the result is being ignored. A common workaround to provide a visual cue is to use `void` with the `try` expression:
+```js
+await fs.promises.unlink("temp.txt")
+```
 
-   ```js
-   function work() {
-     // This approach works without modification and provides a clear hint
-     void try fs.unlinkSync("temp.txt")
-   }
-   ```
+While it is valid to ignore the result, tools like TypeScript ESLint may introduce similar rules, such as [`no-floating-promises`](https://typescript-eslint.io/rules/no-floating-promises/), to encourage developers to explicitly indicate that the result is being ignored. A common workaround to provide a visual cue is to use `void` alongside `try`:
+
+```js
+function work() {
+  // This approach works without modification and provides a clear hint
+  void try fs.unlinkSync("temp.txt")
+}
+```
 
 <br />
 
@@ -316,7 +334,7 @@ The `Result` class represents the form of the value returned by the `try` operat
 
 In Go, the convention is to place the data variable first, and you might wonder why we don't follow the same approach in JavaScript. In Go, this is the standard way to call a function. However, in JavaScript, we already have the option to use `const data = fn()` and choose to ignore the error, which is precisely the issue this proposal seeks to address.
 
-If someone is using the `try` expression, it is because they want to ensure they handle errors and avoid neglecting them. Placing the data first would undermine this principle by prioritizing the result over error handling.
+If someone is using a `try` statement, it is because they want to ensure they handle errors and avoid neglecting them. Placing the data first would undermine this principle by prioritizing the result over error handling.
 
 ```ts
 // This line doesn't acknowledge the possibility of errors being thrown
@@ -347,7 +365,7 @@ try {
 } catch {}
 ```
 
-A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/proposal-try-expressions/issues/13) for those interested.
+A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/proposal-try-statements/issues/13) for those interested.
 
 <br />
 
@@ -377,7 +395,7 @@ There is no guarantee that `createException` always returns an exception. Someon
 
 Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
 
-For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-expressions/issues/30).
+For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-statements/issues/30).
 
 <br />
 
