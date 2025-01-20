@@ -281,21 +281,21 @@ In Go, the convention is to place the data variable first, and you might wonder 
 If someone is using the `try` expression, it is because they want to ensure they handle errors and avoid neglecting them. Placing the data first would undermine this principle by prioritizing the result over error handling.
 
 ```ts
-// Ignores errors!
+// This line doesn't acknowledge the possibility of errors being thrown
 const data = fn()
 
-// It's easy to forget to handle the error
+// It's easy to forget to add a second error parameter
 const [data] = try fn()
 
-// This is the correct approach
+// This approach gives all clues to the reader about the 2 possible states
 const [ok, error, data] = try fn()
 ```
 
 If you want to suppress the error (which is **different** from ignoring the possibility of a function throwing an error), you can do the following:
 
 ```ts
-// This suppresses the `ok` and `error` (ignores them and doesn’t re-throw)
-const [,, data] = try fn()
+// This suppresses a possible error (Ignores and doesn't re-throw)
+const [ok, _, data] = try fn()
 ```
 
 This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
