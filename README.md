@@ -174,7 +174,7 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
 4. **`try await` follows the same rules as other expressions**.
 
    ```js
-   let result = try await fetch("https://api.example.com/data")
+   const result = try await fetch("https://api.example.com/data")
    ```
 
    This is "equivalent" to:
@@ -191,8 +191,8 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
 5. **Statements like `throw` and `using` are not valid in `try` expressions**.
 
    ```js
-   let result = try throw new Error("Something went wrong") // Syntax error!
-   let result = try using resource = new Resource() // Syntax error!
+   const result = try throw new Error("Something went wrong") // Syntax error!
+   const result = try using resource = new Resource() // Syntax error!
    ```
 
    This is because their "equivalent" would also result in a syntax error:
@@ -205,6 +205,23 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
      result = Result.error(error)
    }
    ```
+
+6. **`try` Will Never Throw**
+
+   The `try` operator ensures that no error escapes its scope:
+
+   ```js
+   const [ok, error, result] = try some.thing();
+   ```
+
+   Regardless of the type of error that might occur, `try` will catch it. For example:
+
+   - If `some` is `undefined`.
+   - If `thing` is not a function.
+   - If accessing the `thing` property on `some` throws an error.
+   - Any other exception that can arise on that line of code.
+
+   All potential errors are safely caught and encapsulated within the `try` expression.
 
 <br />
 
