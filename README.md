@@ -109,7 +109,7 @@ async function handle(request, reply) {
   // No need for reassignable variables or nested try/catch blocks
 
   // Do something with comments before returning
-  return reply.send({ userInfo, posts, comments })
+  return reply.send({ userInfo: userInfo.value, posts: posts.value, comments: comments.value })
 }
 ```
 
