@@ -4,6 +4,8 @@
 
 > [!WARNING]  
 > After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Statements`.
+>
+> _[Click here to view the original proposal](https://github.com/arthurfiorette/proposal-try-statements/tree/proposal-safe-assignment-operator)._
 
 <br />
 
