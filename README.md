@@ -253,8 +253,8 @@ The `Result` class represents the form of the value returned by the `try` operat
    A `Result` instance contains three properties:
 
    - **`ok`**: A boolean indicating whether the expression executed successfully.
-   - **`error`**: The error thrown during execution, or `null` if no error occurred.
-   - **`value`**: The data returned from the execution, or `null` if an error occurred.
+   - **`error`**: The error thrown during execution, or `undefined` if no error occurred.
+   - **`value`**: The data returned from the execution, or `undefined` if an error occurred.
 
    Example usage:
 
@@ -280,7 +280,7 @@ The `Result` class represents the form of the value returned by the `try` operat
 
    ```js
    // Creating a successful result
-   const result = new Result(true, null, value)
+   const result = new Result(true, undefined, value)
    const result = Result.ok(value)
 
    // Creating an error result

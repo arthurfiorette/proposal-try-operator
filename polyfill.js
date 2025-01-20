@@ -2,10 +2,6 @@
 
 /** @type {ResultConstructor} */
 class Result {
-  ok = false
-  error = null
-  value = null
-
   constructor(ok, error, value) {
     this.ok = ok
     this.error = error
@@ -19,10 +15,10 @@ class Result {
   }
 
   static ok(value) {
-    return new Result(true, null, value)
+    return new Result(true, undefined, value)
   }
 
   static error(error) {
-    return new Result(false, error, null)
+    return new Result(false, error, undefined)
   }
 }

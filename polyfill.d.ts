@@ -8,14 +8,14 @@
 /**
  * Error result type expressed as object
  */
-type ErrorObjectResult = { ok: false; error: unknown; value: null }
+type ErrorObjectResult = { ok: false; error: unknown; value: undefined }
 
 /**
  * Error result type expressed as tuple.
  *
  * - `error` type depends on `useUnknownInCatchVariables` tsconfig option
  */
-type ErrorTupleResult = [ok: false, error: unknown, value: null]
+type ErrorTupleResult = [ok: false, error: unknown, value: undefined]
 
 /**
  * An error result is a object that can be either destructured {@link ErrorObjectResult} or accessed by index {@link ErrorTupleResult}
@@ -25,12 +25,12 @@ type ErrorResult = ErrorObjectResult & ErrorTupleResult
 /**
  * Value result type expressed as object
  */
-type ValueObjectResult<V> = { ok: true; error: null; value: V }
+type ValueObjectResult<V> = { ok: true; error: undefined; value: V }
 
 /**
  * Value result type expressed as tuple
  */
-type ValueTupleResult<V> = [ok: true, error: null, value: V]
+type ValueTupleResult<V> = [ok: true, error: undefined, value: V]
 
 /**
  * A value result is a object that can be either destructured {@link ValueObjectResult} or accessed by index {@link ValueTupleResult}
@@ -48,7 +48,7 @@ interface ResultConstructor {
    *
    * @example
    *
-   * new Result(true, null, 42)
+   * new Result(true, undefined, 42)
    * new Result(false, new Error('Something went wrong'))
    */
   new <V>(...args: ValueTupleResult<V> | ErrorTupleResult): Result<V>
