@@ -22,7 +22,15 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
-- [Try Operator](#try-operator)
+- [Try Statement](#try-statement)
+  - [Cannot be inlined.](#cannot-be-inlined)
+  - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
+  - [Any valid expression can be use](#any-valid-expression-can-be-use)
+    - [`await` is not an exception](#await-is-not-an-exception)
+  - [Statements are not expressions](#statements-are-not-expressions)
+  - [Never throws](#never-throws)
+  - [Parentheses Required for Object Literals](#parentheses-required-for-object-literals)
+  - [Result Can Be Safely Ignored for Void Operations](#result-can-be-safely-ignored-for-void-operations)
 - [Result class](#result-class)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
@@ -124,115 +132,117 @@ A `try` statement provide significant flexibility and arguably result in more re
 
 <br />
 
-## Try Operator
+## Try Statement
 
 The `try` operator consists of the `try` keyword followed by an expression. Its result is an instance of the [`Result`](#result-class).
 
-1. **`try` statements cannot be inlined**, similar to `throw`, `return`, and `await`.
+### Cannot be inlined.
 
-   ```js
-   array.map((fn) => try fn()).filter((result) => result.ok) // Syntax error!
-   ```
+Similar to `throw`, `return`, and `await`
 
-2. **Expressions are evaluated in a self-contained `try/catch` block**.
+```js
+array.map((fn) => try fn()).filter((result) => result.ok) // Syntax error!
+```
 
-   ```js
-   const result = try expr1
-   ```
+### Expressions are evaluated in a self-contained `try/catch` block
 
-   This is "equivalent" to:
+```js
+const result = try expr1
+```
 
-   ```js
-   let result
-   try {
-     result = Result.ok(expr1)
-   } catch (error) {
-     result = Result.error(error)
-   }
-   ```
+This is "equivalent" to:
 
-3. **Any valid expression can be used**
+```js
+let result
+try {
+  result = Result.ok(expr1)
+} catch (error) {
+  result = Result.error(error)
+}
+```
 
-   ```js
-   const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
-   ```
+### Any valid expression can be use
 
-   This is "equivalent" to:
+```js
+const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
+```
 
-   ```js
-   let result
-   try {
-     result = Result.ok(
-       data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
-     )
-   } catch (error) {
-     result = Result.error(error)
-   }
-   ```
+This is "equivalent" to:
 
-   `try` cannot nest since its a statement.
+```js
+let result
+try {
+  result = Result.ok(
+    data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
+  )
+} catch (error) {
+  result = Result.error(error)
+}
+```
 
-4. **`await` follows the same rules as other expressions**.
+`try` cannot nest since its a statement.
 
-   ```js
-   const result = try await fetch("https://api.example.com/data")
-   ```
+#### `await` is not an exception
 
-   This is "equivalent" to:
+```js
+const result = try await fetch("https://api.example.com/data")
+```
 
-   ```js
-   let result
-   try {
-     result = Result.ok(await fetch("https://api.example.com/data"))
-   } catch (error) {
-     result = Result.error(error)
-   }
-   ```
+This is "equivalent" to:
 
-5. **Statements like `throw` and `using` are not valid as a expression**.
+```js
+let result
+try {
+  result = Result.ok(await fetch("https://api.example.com/data"))
+} catch (error) {
+  result = Result.error(error)
+}
+```
 
-   ```js
-   const result = try throw new Error("Something went wrong") // Syntax error!
-   const result = try using resource = new Resource() // Syntax error!
-   ```
+### Statements are not expressions
 
-   This is because their "equivalent" would also result in a syntax error:
+```js
+const result = try throw new Error("Something went wrong") // Syntax error!
+const result = try using resource = new Resource() // Syntax error!
+```
 
-   ```js
-   let result
-   try {
-     result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
-   } catch (error) {
-     result = Result.error(error)
-   }
-   ```
+This is because their "equivalent" would also result in a syntax error:
 
-6. **`try` Will Never Throw**
+```js
+let result
+try {
+  result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
+} catch (error) {
+  result = Result.error(error)
+}
+```
 
-   The `try` operator ensures that no error escapes its scope:
+### Never throws
 
-   ```js
-   const [ok, error, result] = try some.thing()
-   ```
+The `try` operator ensures that no error escapes its scope:
 
-   Regardless of the type of error that might occur, `try` will catch it. For example:
+```js
+const [ok, error, result] = try some.thing()
+```
 
-   - If `some` is `undefined`.
-   - If `thing` is not a function.
-   - If accessing the `thing` property on `some` throws an error.
-   - Any other exception that can arise on that line of code.
+Regardless of the type of error that might occur, `try` will catch it. For example:
 
-   All potential errors are safely caught and encapsulated within the `try` statements.
+- If `some` is `undefined`.
+- If `thing` is not a function.
+- If accessing the `thing` property on `some` throws an error.
+- Any other exception that can arise on that line of code.
 
-7. **Parentheses Required for Object Literals**
+All potential errors are safely caught and encapsulated within the `try` statements.
 
-   When using `try` with an object literal, the literal must be enclosed in parentheses:
+### Parentheses Required for Object Literals
 
-   ```js
-   const result = try ({ data: await work() })
-   ```
+When using `try` with an object literal, the literal must be enclosed in parentheses:
 
-   This behavior mirrors how JavaScript differentiates blocks and object literals:
+```js
+const result = try ({ data: await work() })
+```
+
+This behavior mirrors how JavaScript differentiates blocks and object literals:
 
 <!-- prettier-ignore -->
    ```js
@@ -240,30 +250,30 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
    ({ a: 1 }) // object with a key `a` and a number `1`
    ```
 
-8. **Result Can Be Safely Ignored for Void Operations**
+### Result Can Be Safely Ignored for Void Operations
 
-   In scenarios where the successful result of a operation is not needed, it can be safely ignored:
+In scenarios where the successful result of a operation is not needed, it can be safely ignored:
 
-   ```js
-   function work() {
-     try fs.unlinkSync("temp.txt")
-   }
-   ```
+```js
+function work() {
+  try fs.unlinkSync("temp.txt")
+}
+```
 
-   This behavior aligns with common patterns, such as using `await` on asynchronous operations where the result is not utilized:
+This behavior aligns with common patterns, such as using `await` on asynchronous operations where the result is not utilized:
 
-   ```js
-   await fs.promises.unlink("temp.txt")
-   ```
+```js
+await fs.promises.unlink("temp.txt")
+```
 
-   While it is valid to ignore the result, tools like TypeScript ESLint may introduce similar rules, such as [`no-floating-promises`](https://typescript-eslint.io/rules/no-floating-promises/), to encourage developers to explicitly indicate that the result is being ignored. A common workaround to provide a visual cue is to use `void` alongside `try`:
+While it is valid to ignore the result, tools like TypeScript ESLint may introduce similar rules, such as [`no-floating-promises`](https://typescript-eslint.io/rules/no-floating-promises/), to encourage developers to explicitly indicate that the result is being ignored. A common workaround to provide a visual cue is to use `void` alongside `try`:
 
-   ```js
-   function work() {
-     // This approach works without modification and provides a clear hint
-     void try fs.unlinkSync("temp.txt")
-   }
-   ```
+```js
+function work() {
+  // This approach works without modification and provides a clear hint
+  void try fs.unlinkSync("temp.txt")
+}
+```
 
 <br />
 
