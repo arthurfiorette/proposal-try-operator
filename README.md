@@ -8,7 +8,7 @@
 <br />
 
 <div align="center">
-  <img src="./assets/logo-slim.png" width="80%" alt="ECMAScript Try Expressions Proposal" />
+  <img src="./assets/banner.png" alt="ECMAScript Try Expressions Proposal" />
 </div>
 
 <br />
