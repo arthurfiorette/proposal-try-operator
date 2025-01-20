@@ -213,7 +213,7 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
    The `try` operator ensures that no error escapes its scope:
 
    ```js
-   const [ok, error, result] = try some.thing();
+   const [ok, error, result] = try some.thing()
    ```
 
    Regardless of the type of error that might occur, `try` will catch it. For example:
@@ -224,6 +224,22 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
    - Any other exception that can arise on that line of code.
 
    All potential errors are safely caught and encapsulated within the `try` expression.
+
+7. **Parentheses Required for Object Literals in `try` Expressions**
+
+   When using `try` with an object literal, the literal must be enclosed in parentheses:
+
+   ```js
+   const result = try ({ data: await work() })
+   ```
+
+   This behavior mirrors how JavaScript handles arrow functions:
+
+<!-- prettier-ignore -->
+   ```js
+   const c = () => ({ d: 1 }) // `c` is of type () => { d: number }
+   const a = () => { b: 1 } // `b` is interpreted as a label, and `a` is of type () => void
+   ```
 
 <br />
 
