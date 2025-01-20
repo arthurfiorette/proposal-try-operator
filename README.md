@@ -19,6 +19,16 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 
 <hr />
 <br />
+
+- [Try/Catch Is Not Enough](#trycatch-is-not-enough)
+- [Try Operator](#try-operator)
+  - [Rules for `try` expressions:](#rules-for-try-expressions)
+- [Result class](#result-class)
+- [Help Us Improve This Proposal](#help-us-improve-this-proposal)
+- [Authors](#authors)
+- [Inspiration](#inspiration)
+- [License](#license)
+
 <br />
 
 ## Try/Catch Is Not Enough
