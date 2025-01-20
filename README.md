@@ -29,7 +29,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
     - [`await` is not an exception](#await-is-not-an-exception)
   - [Statements are not expressions](#statements-are-not-expressions)
   - [Never throws](#never-throws)
-  - [Parentheses Required for Object Literals](#parentheses-required-for-object-literals)
+  - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Result Can Be Safely Ignored for Void Operations](#result-can-be-safely-ignored-for-void-operations)
 - [Result class](#result-class)
 - [Why Not `data` First?](#why-not-data-first)
@@ -234,9 +234,9 @@ Regardless of the type of error that might occur, `try` will catch it. For examp
 
 All potential errors are safely caught and encapsulated within the `try` statements.
 
-### Parentheses Required for Object Literals
+### Parenthesis Required for Object Literals
 
-When using `try` with an object literal, the literal must be enclosed in parentheses:
+When using `try` with an object literal, the literal must be enclosed in parenthesis:
 
 ```js
 const result = try ({ data: await work() })
