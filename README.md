@@ -87,21 +87,21 @@ async function handle(request, reply) {
   const userInfo = try await cache.getUserInfo(request.id)
 
   if (!userInfo.ok) {
-    logger.error(error, "Maybe DB is down?")
+    logger.error(userInfo.error, "Maybe DB is down?")
     return reply.status(500).send({ error: "Could not get user info" })
   }
 
   const posts = try await db.getPosts(userInfo.authorId)
 
   if (!posts.ok) {
-    logger.error(error, "Anonymous user behavior not implemented yet")
+    logger.error(posts.error, "Anonymous user behavior not implemented yet")
     return reply.status(500).send({ error: "Could not get posts" })
   }
 
-  const comments =try await db.getComments(posts.map((post) => post.id))
+  const comments = try await db.getComments(posts.map((post) => post.id))
 
   if (!comments.ok) {
-    logger.error(error, "Posts without comments not implemented yet")
+    logger.error(comments.error, "Posts without comments not implemented yet")
     return reply.status(500).send({ error: "Could not get comments" })
   }
 
