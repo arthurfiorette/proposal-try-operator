@@ -351,7 +351,7 @@ if (!error) {
 }
 ```
 
-There is no guarantee that `createException` always returns an exception. For example, someone could mistakenly write `throw null` or `throw undefined`, both of which are valid but undesired JavaScript code.
+There is no guarantee that `createException` always returns an exception. Someone could even mistakenly write `throw null` or `throw undefined`, both of which are valid but undesired JavaScript code.
 
 Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
 
