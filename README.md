@@ -1,7 +1,7 @@
 <br />
 
 > [!CAUTION]
-> This proposal will change to `try-expressions` as its a more idiomatic apporach to this problem. Read more on [#4](https://github.com/arthurfiorette/proposal-safe-assignment-operator/issues/4) and [#5](https://github.com/arthurfiorette/proposal-safe-assignment-operator/issues/5).
+> This proposal will change to `try-expressions` as its a more idiomatic apporach to this problem. Help us rewrite it at [#53](https://github.com/arthurfiorette/proposal-safe-assignment-operator/pull/53).
 > 
 > Help on its rewriting is needed :)
 
