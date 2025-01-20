@@ -23,7 +23,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
 - [Try Operator](#try-operator)
-  - [Rules for `try` expressions:](#rules-for-proposal-try-expressions)
 - [Result class](#result-class)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
@@ -128,8 +127,6 @@ The `try` expressions provide significant flexibility and arguably result in mor
 ## Try Operator
 
 The `try` operator consists of the `try` keyword followed by an expression. Its result is an instance of the [`Result`](#result-class).
-
-### Rules for `try` expressions:
 
 1. **`try` expressions cannot be inlined**, similar to `throw`, `return`, and `await`.
 
@@ -239,6 +236,31 @@ The `try` operator consists of the `try` keyword followed by an expression. Its 
    ```js
    const c = () => ({ d: 1 }) // `c` is of type () => { d: number }
    const a = () => { b: 1 } // `b` is interpreted as a label, and `a` is of type () => void
+   ```
+
+8. **Result Can Be Safely Ignored for Void Operations**
+
+   In scenarios where the successful result of a operation is not needed, it can be safely ignored:
+
+   ```js
+   function work() {
+     try fs.unlinkSync("temp.txt")
+   }
+   ```
+
+   This behavior aligns with common patterns, such as using `await` on asynchronous operations where the result is not utilized:
+
+   ```js
+   await fs.promises.unlink("temp.txt")
+   ```
+
+   While it is valid to ignore the result, tools like TypeScript ESLint may introduce similar rules, such as [`no-floating-promises`](https://typescript-eslint.io/rules/no-floating-promises/), to encourage developers to explicitly indicate that the result is being ignored. A common workaround to provide a visual cue is to use `void` with the `try` expression:
+
+   ```js
+   function work() {
+     // This approach works without modification and provides a clear hint
+     void try fs.unlinkSync("temp.txt")
+   }
    ```
 
 <br />
