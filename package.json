@@ -1,16 +1,16 @@
 {
   "private": true,
-  "name": "proposal-safe-assignment-operator",
+  "name": "try-expression",
   "description": "A repository template for ECMAScript proposals.",
   "scripts": {
     "start": "npm run build-loose -- --watch",
     "build": "npm run build-loose -- --strict",
     "build-loose": "node -e 'fs.mkdirSync(\"build\", { recursive: true })' && ecmarkup --load-biblio @tc39/ecma262-biblio --verbose spec.emu build/index.html --lint-spec"
   },
-  "homepage": "https://github.com/arthurfiorette/proposal-safe-assignment-operator#readme",
+  "homepage": "https://github.com/arthurfiorette/try-expression#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/arthurfiorette/proposal-safe-assignment-operator.git"
+    "url": "git+https://github.com/arthurfiorette/try-expression.git"
   },
   "license": "MIT",
   "devDependencies": {

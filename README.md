@@ -1,42 +1,25 @@
 <br />
 
-> [!CAUTION]
-> This proposal will change to `try-expressions` as its a more idiomatic apporach to this problem. Read more on [#4](https://github.com/arthurfiorette/proposal-safe-assignment-operator/issues/4) and [#5](https://github.com/arthurfiorette/proposal-safe-assignment-operator/issues/5).
-> 
-> Help on its rewriting is needed :)
-
-<br />
-
-<h1>ECMAScript Safe Assignment Operator Proposal</h1>
+<h1>ECMAScript Try Expression</h1>
 
 > [!WARNING]  
-> This proposal is actively under development, and [contributions are welcome](#help-us-improve-this-proposal).
+> After a log of discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Expression`.
 
 <br />
 
-This proposal introduces a new operator, `?=` _(Safe Assignment)_, which simplifies error handling by transforming the result of a function into a tuple. If the function throws an error, the operator returns `[error, null]`; if the function executes successfully, it returns `[null, result]`. This operator is compatible with promises, async functions, and any value that implements the [`Symbol.result`](#symbolresult) method.
-
-For example, when performing I/O operations or interacting with Promise-based APIs, errors can occur unexpectedly at runtime. Neglecting to handle these errors can lead to unintended behavior and potential security vulnerabilities.
+<div align="center">
+  <img srg="./assets/logo.png" alt="ECMAScript Try Expression Proposal" />
+</div>
 
 <br />
 
-```ts
-const [error, response] ?= await fetch("https://arthur.place")
-```
+This proposal intends to address a surging issue regarding the uncommon ergonomics of maintaining subsequent _(and possible nested)_ `try/catch` blocks required to correctly execute operations that might fail at any point.
+
+Only the `catch (error) {}` part is the actual control flow and no program state requires to be within a `try {}` block. Forcing the successful flow to be inside a nested block is not ideal.
 
 <hr />
 <br />
 
-- [Motivation](#motivation)
-- [Proposed Features](#proposed-features)
-  - [`Symbol.result`](#symbolresult)
-  - [The Safe Assignment Operator (`?=`)](#the-safe-assignment-operator-)
-    - [Usage in Functions](#usage-in-functions)
-    - [Usage with Objects](#usage-with-objects)
-  - [Recursive Handling](#recursive-handling)
-  - [Promises](#promises)
-  - [`using` Statement](#using-statement)
-- [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Why Not `data` First?](#why-not-data-first)
 - [Polyfilling](#polyfilling)
 - [Using `?=` with Functions and Objects Without `Symbol.result`](#using--with-functions-and-objects-without-symbolresult)
@@ -47,12 +30,11 @@ const [error, response] ?= await fetch("https://arthur.place")
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Authors](#authors)
 - [Inspiration](#inspiration)
-- [Inspiration](#inspiration-1)
 - [License](#license)
 
 <br />
 
-## Motivation
+<!-- ## Motivation
 
 - **Simplified Error Handling**: Streamline error management by eliminating the need for try-catch blocks.
 - **Enhanced Readability**: Improve code clarity by reducing nesting and making the flow of error handling more intuitive.
@@ -61,7 +43,7 @@ const [error, response] ?= await fetch("https://arthur.place")
 
 <br />
 
-<!-- credits to https://www.youtube.com/watch?v=SloZE4i4Zfk -->
+<!-- credits to https://www.youtube.com/watch?v=SloZE4i4Zfk --/>
 
 How often have you seen code like this?
 
@@ -293,7 +275,7 @@ The `using` management flow is applied only when `error` is `null` or `undefined
 
 ## Try/Catch Is Not Enough
 
-<!-- credits to https://x.com/LeaVerou/status/1819381809773216099 -->
+<!-- credits to https://x.com/LeaVerou/status/1819381809773216099 --/>
 
 The `try {}` block is rarely useful, as its scoping lacks conceptual significance. It often functions more as a code annotation rather than a control flow construct. Unlike control flow blocks, there is no program state that is meaningful only within a `try {}` block.
 
@@ -381,7 +363,7 @@ try {
 } catch {}
 ```
 
-Complete discussion about this topic at https://github.com/arthurfiorette/proposal-safe-assignment-operator/issues/13 if the reader is interested.
+Complete discussion about this topic at https://github.com/arthurfiorette/try-expression/issues/13 if the reader is interested.
 
 <br />
 
@@ -511,7 +493,7 @@ try {
 }
 ```
 
-<br />
+<br /> -->
 
 ## Help Us Improve This Proposal
 
@@ -523,18 +505,16 @@ This proposal is in its early stages, and we welcome your input to help refine i
 
 ## Authors
 
-- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([Twitter](https://x.com/arthurfiorette))</sub>
+- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
 
 <br />
 
 ## Inspiration
 
-## Inspiration
-
 - [This tweet from @LeaVerou](https://x.com/LeaVerou/status/1819381809773216099)
+- The frequent oversight of error handling in JavaScript code.
 - [Effect TS Error Management](https://effect.website/docs/guides/error-management)
 - The [`tuple-it`](https://www.npmjs.com/package/tuple-it) npm package, which introduces a similar concept but modifies the `Promise` and `Function` prototypes—an approach that is less ideal.
-- The frequent oversight of error handling in JavaScript code.
 
 <br />
 
