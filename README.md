@@ -3,9 +3,7 @@
 <h1>ECMAScript Try Statements</h1>
 
 > [!WARNING]  
-> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Statements`.
->
-> _[Click here to view the original proposal](https://github.com/arthurfiorette/proposal-try-statements/tree/proposal-safe-assignment-operator)._
+> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Statements`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-statements/tree/proposal-safe-assignment-operator)._
 
 <br />
 
@@ -32,7 +30,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Statements are not expressions](#statements-are-not-expressions)
   - [Never throws](#never-throws)
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
-  - [Result Can Be Safely Ignored for Void Operations](#result-can-be-safely-ignored-for-void-operations)
+  - [Void Operations](#void-operations)
 - [Result class](#result-class)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
@@ -256,7 +254,7 @@ This behavior mirrors how JavaScript differentiates blocks and object literals:
 
 A detailed discussion about this topic is available at [GitHub Issue #55](https://github.com/arthurfiorette/proposal-try-statements/issues/55) for those interested.
 
-### Result Can Be Safely Ignored for Void Operations
+### Void Operations
 
 In scenarios where the successful result of a operation is not needed, it can be safely ignored:
 
