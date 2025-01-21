@@ -153,12 +153,13 @@ const result = try expr1
 This is "equivalent" to:
 
 ```js
-let result
+let _result
 try {
-  result = Result.ok(expr1)
+  _result = Result.ok(expr1)
 } catch (error) {
-  result = Result.error(error)
+  _result = Result.error(error)
 }
+const result = _result
 ```
 
 ### Any valid expression can be use
@@ -170,14 +171,15 @@ const result = try data?.someProperty.anotherFunction?.(await someData()).andAno
 This is "equivalent" to:
 
 ```js
-let result
+let _result
 try {
-  result = Result.ok(
+  _result = Result.ok(
     data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
   )
 } catch (error) {
-  result = Result.error(error)
+  _result = Result.error(error)
 }
+const result = _result
 ```
 
 `try` cannot nest since its a statement.
@@ -191,12 +193,13 @@ const result = try await fetch("https://api.example.com/data")
 This is "equivalent" to:
 
 ```js
-let result
+let _result
 try {
-  result = Result.ok(await fetch("https://api.example.com/data"))
+  _result = Result.ok(await fetch("https://api.example.com/data"))
 } catch (error) {
-  result = Result.error(error)
+  _result = Result.error(error)
 }
+const result = _result
 ```
 
 ### Statements are not expressions
@@ -209,12 +212,13 @@ const result = try using resource = new Resource() // Syntax error!
 This is because their "equivalent" would also result in a syntax error:
 
 ```js
-let result
+let _result
 try {
-  result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
+  _result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
 } catch (error) {
-  result = Result.error(error)
+  _result = Result.error(error)
 }
+const result = _result
 ```
 
 A detailed discussion about this topic is available at [GitHub Issue #54](https://github.com/arthurfiorette/proposal-try-statements/issues/54) for those interested.
