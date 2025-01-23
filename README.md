@@ -19,6 +19,25 @@ This proposal aims to address the ergonomic challenges of managing multiple, oft
 
 Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
+
+**From this**
+
+```js
+let _result // use a temp variable
+try {
+  _result = TryResult.ok(await expr1) 
+} catch (error) {
+  _result = TryResult.error(error) 
+}
+const result = _result // enforce const
+```
+
+**To this**
+
+```js
+const result = try await expr1
+```
+
 <hr />
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
@@ -31,7 +50,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Highest precedence possible](#highest-precedence-possible)
   - [Never throws](#never-throws)
   - [Void Operations](#void-operations)
-  - [Easily transpiled](#easily-transpiled)
 - [Syntax](#syntax)
   - [Runtime Semantics: Evaluation](#runtime-semantics-evaluation)
   - [TryExpressionResult abstract operation](#tryexpressionresult-abstract-operation)
@@ -244,26 +262,6 @@ function work() {
   // This approach works without modification and provides a clear hint
   void try fs.unlinkSync("temp.txt")
 }
-```
-
-### Easily transpiled
-
-The feature can easily be transpiled for older runtimes with all the same guarantees. 
-
-```js
-const result = try await expr1
-```
-
-This is "equivalent" to:
-
-```js
-let _result // transpiler assigns private variable
-try {
-  _result = TryResult.ok(await expr1) 
-} catch (error) {
-  _result = TryResult.error(error) 
-}
-const result = _result // const enforced at runtime
 ```
 
 
