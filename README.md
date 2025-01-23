@@ -236,6 +236,10 @@ const result = try await fetch("https://api.example.com/data")
 const result = try expression1 || expression2; // the try covers both, same as an arrow function body
 const result = try check ? expression1 : expression2; // try covers the entire expression
 const result = try expression1 ?? expresssion2; // again covers the entire expression
+const result = try (expression1, expression2); // covers all, returning the last one
+const result = try ({ "my": await fetch() }); // convers everything inside the object
+const result = try [await fetch(), expression1, anything else]; // covers everything inside the array
+const result = try this.test = this.test2 = await fetch(); // covers everything
 ```
 
 ### Statements are not expressions
