@@ -99,14 +99,14 @@ async function handle(request, reply) {
     return reply.status(500).send({ error: "Could not get user info" })
   }
 
-  const posts = try await db.getPosts(userInfo.authorId)
+  const posts = try await db.getPosts(userInfo.value.authorId)
 
   if (!posts.ok) {
     logger.error(posts.error, "Anonymous user behavior not implemented yet")
     return reply.status(500).send({ error: "Could not get posts" })
   }
 
-  const comments = try await db.getComments(posts.map((post) => post.id))
+  const comments = try await db.getComments(posts.value.map((post) => post.id))
 
   if (!comments.ok) {
     logger.error(comments.error, "Posts without comments not implemented yet")
@@ -353,7 +353,7 @@ If you want to suppress the error (which is **different** from ignoring the poss
 
 ```ts
 // This suppresses a possible error (Ignores and doesn't re-throw)
-const [ok, _, data] = try fn()
+const [ok, , data] = try fn()
 ```
 
 This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
@@ -361,10 +361,13 @@ This approach is explicit and readable, as it acknowledges the possibility of an
 The above method, often referred to as "try-catch calaboca" (a Brazilian term), can also be written as:
 
 ```ts
+let ok = true
 let data
 try {
   data = fn()
-} catch {}
+} catch {
+  ok = false
+}
 ```
 
 A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/proposal-try-statements/issues/13) for those interested.
