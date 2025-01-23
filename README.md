@@ -28,7 +28,8 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
     - [(Like the arrow function, you must surround object literals in parenthesis.)](#like-the-arrow-function-you-must-surround-object-literals-in-parenthesis)
     - [It does not create a new block and cannot protect non-expressions.](#it-does-not-create-a-new-block-and-cannot-protect-non-expressions)
     - [It can completely protect a single expression.](#it-can-completely-protect-a-single-expression)
-  - [All valid expressions can be used](#all-valid-expressions-can-be-used)
+  - [any valid expressions can be used](#any-valid-expressions-can-be-used)
+  - [Highest precedence possible](#highest-precedence-possible)
   - [Statements are not expressions](#statements-are-not-expressions)
   - [Never throws](#never-throws)
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
@@ -41,7 +42,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [**Structure of a `TryResult` Instance**](#structure-of-a-tryresult-instance)
   - [**Iterable Behavior**](#iterable-behavior)
   - [**Manual Creation of a `TryResult`**](#manual-creation-of-a-tryresult)
-  - [TypeScript already supports type narrowing](#typescript-already-supports-type-narrowing)
   - [A fairly contrived example using Typescript](#a-fairly-contrived-example-using-typescript)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
@@ -152,7 +152,7 @@ Whereas a try block protects an entire block, a try expression protects an entir
 
 The `try` expression is an Assignment Expression and consists of the `try` keyword followed by an Assignment Expression. Yes, it's recursive.
 
-Like the `yield` and `typeof` keywords, it has a result. Its result is an instance of the [`TryResult` class](#tryresult-class).
+Like the `yield`, `await`, and `typeof` keywords, it has a result. Its result is an instance of the [`TryResult` class](#tryresult-class).
 
 ### Same parsing rules as assignment expression, with one caveat
 
@@ -227,30 +227,26 @@ try checkSomething(), try checkSomething2();
 An object literal `{ "my": "object" }` must always be surrounded by parentheses if the try keyword is directly before it, no matter where it is used. 
 
 
-### All valid expressions can be used
+### any valid expressions can be used
 
 ```js
-array.map((fn) => try fn()).filter((result) => result.ok);
-const result = try expr1; // literally any expression
-const result = try yield try expression; // wrap the yield on both sides if you want
 const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
-const result = try await fetch("https://api.example.com/data", {headers: {}}) 
-const result = try expression1 || expression2; // the try covers both, same as an arrow function body
-const result = try check ? expression1 : expression2; // try covers the entire expression
-const result = try expression1 ?? expresssion2; // again covers the entire expression
-const result = try (expression1, expression2); // covers all, returning the last one
-const result = try ({ "my": await fetch() }); // convers everything inside the object
-const result = try [await fetch(), expression1, anything else]; // covers everything inside the array
-const result = try this.test = this.test2 = await fetch(); // covers everything
+const result = try await someData(); //await can be used anywhere
+```
+
+### Highest precedence possible
+
+```js
+const result = try checkData() || doSomething() && logResult();
+const result = try checkData() ? doSomething() : logResult();
 ```
 
 ### Statements are not expressions
 
 ```js
 const result = try throw new Error("Something went wrong") // Syntax error!
-const result = try return something(); // um, you're returning. Wrap it in a try block.
-const result = try if("test" === "test"){} // Syntax error anyway, just wrap it in a try block
-try if("test" === "test"){} // still a syntax error. Wrap it in a try block
+const result = try using resource = new Resource() // Syntax error!
+try if("test" === "test"){} // Syntax error! Use a try block instead
 ```
 
 ### Never throws
@@ -402,29 +398,6 @@ const result = TryResult.ok(value)
 // Creating an error result
 const result = new TryResult(false, error)
 const result = TryResult.error(error)
-```
-
-### TypeScript already supports type narrowing 
-
-```ts
-function examples() {
-    const [ok, error, result] = Result.ok("hello");
-    // inside the if statement, the types are correct.
-    if (ok) {
-        const test: string = result;
-        const err: undefined = error;
-    } else {
-        const test: undefined = result;
-        const err: unknown = error;
-    }
-    // outside the if statement, we have Schroedinger types
-    const test: string | undefined = result;
-    const err: unknown = error;
-    // return if there is an error
-    if(!ok) return;
-    // the result type is again a string
-    const test2: string = result;
-}
 ```
 
 ### A fairly contrived example using Typescript
