@@ -1,7 +1,7 @@
 /// <reference path="./polyfill.d.ts" />
 
-/** @type {ResultConstructor} */
-class Result {
+/** @type {TryResultConstructor} */
+class TryResult {
   constructor(ok, error, value) {
     this.ok = ok
     this.error = error
@@ -15,10 +15,11 @@ class Result {
   }
 
   static ok(value) {
-    return new Result(true, undefined, value)
+    return new TryResult(true, undefined, value)
   }
 
   static error(error) {
-    return new Result(false, error, undefined)
+    return new TryResult(false, error, undefined)
   }
 }
+

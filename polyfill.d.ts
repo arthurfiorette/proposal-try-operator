@@ -8,39 +8,39 @@
 /**
  * Error result type expressed as object
  */
-type ErrorObjectResult = { ok: false; error: unknown; value: undefined }
+type TryResultErrorObject = { ok: false; error: unknown; value: undefined }
 
 /**
  * Error result type expressed as tuple.
  *
  * - `error` type depends on `useUnknownInCatchVariables` tsconfig option
  */
-type ErrorTupleResult = [ok: false, error: unknown, value: undefined]
+type TryResultErrorTuple = [ok: false, error: unknown, value: undefined]
 
 /**
- * An error result is a object that can be either destructured {@link ErrorObjectResult} or accessed by index {@link ErrorTupleResult}
+ * An error result is a object that can be either destructured {@link TryResultErrorObject} or accessed by index {@link TryResultErrorTuple}
  */
-type ErrorResult = ErrorObjectResult & ErrorTupleResult
+type TryResultError = TryResultErrorObject & TryResultErrorTuple
 
 /**
  * Value result type expressed as object
  */
-type ValueObjectResult<V> = { ok: true; error: undefined; value: V }
+type TryResultValueObject<V> = { ok: true; error: undefined; value: V }
 
 /**
  * Value result type expressed as tuple
  */
-type ValueTupleResult<V> = [ok: true, error: undefined, value: V]
+type TryResultValueTuple<V> = [ok: true, error: undefined, value: V]
 
 /**
- * A value result is a object that can be either destructured {@link ValueObjectResult} or accessed by index {@link ValueTupleResult}
+ * A value result is a object that can be either destructured {@link TryResultValueObject} or accessed by index {@link TryResultValueTuple}
  */
-type ValueResult<V> = ValueObjectResult<V> & ValueTupleResult<V>
+type TryResultValue<V> = TryResultValueObject<V> & TryResultValueTuple<V>
 
 /**
  * A result is a object that can represent the result of either a failed or successful operation.
  */
-type Result<V> = ErrorResult | ValueResult<V>
+type TryResult<V> = TryResultError | TryResultValue<V>
 
 interface ResultConstructor {
   /**
@@ -51,17 +51,17 @@ interface ResultConstructor {
    * new Result(true, undefined, 42)
    * new Result(false, new Error('Something went wrong'))
    */
-  new <V>(...args: ValueTupleResult<V> | ErrorTupleResult): Result<V>
+  new <V>(...args: TryResultValueTuple<V> | TryResultErrorTuple): TryResult<V>
 
   /**
    * Creates a result for a successful operation
    */
-  ok<V>(value: V): Result<V>
+  ok<V>(value: V): TryResult<V>
 
   /**
    * Creates a result for a failed operation
    */
-  error<V>(error: unknown): Result<V>
+  error<V>(error: unknown): TryResult<V>
 }
 
-declare const Result: ResultConstructor
+declare const TryResult: ResultConstructor

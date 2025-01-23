@@ -230,9 +230,10 @@ An object literal `{ "my": "object" }` must always be surrounded by parentheses 
 
 ```js
 array.map((fn) => try fn()).filter((result) => result.ok);
-const result = try expr1;
+const result = try expr1; // literally any expression
+const result = try yield try expression; // wrap the yield on both sides if you want
 const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
-const result = try await fetch("https://api.example.com/data")
+const result = try await fetch("https://api.example.com/data", {headers: {}}) 
 const result = try expression1 || expression2; // the try covers both, same as an arrow function body
 const result = try check ? expression1 : expression2; // try covers the entire expression
 const result = try expression1 ?? expresssion2; // again covers the entire expression
@@ -246,8 +247,9 @@ const result = try this.test = this.test2 = await fetch(); // covers everything
 
 ```js
 const result = try throw new Error("Something went wrong") // Syntax error!
-const result = try if("test" === "test"){} // Syntax error!
-try if("test" === "test"){} // still a syntax error, for the same reason.
+const result = try return something(); // um, you're returning. Wrap it in a try block.
+const result = if("test" === "test"){} // Syntax error anyway, just wrap it in a try block
+try if("test" === "test"){} // still a syntax error. Wrap it in a try block
 ```
 
 ### Never throws
@@ -274,7 +276,7 @@ All potential errors are safely caught and encapsulated within the `try` express
 When using `try` with an object literal, the literal must be enclosed in parenthesis:
 
 ```js
-const result = try ({ data: await work() })
+const result = try ({ data: await fetch("url", { headers: {} }) })
 ```
 
 This behavior mirrors how JavaScript differentiates blocks and object literals:
@@ -332,18 +334,20 @@ AssignmentExpression[In, Yield, Await] :
 
 _TryExpression_ **: try** _AssignmentExpression_ 
 
-1. Let _A_ be Completion(Evaluation of AssignmentExpression).
-2. If _A_ is a throw completion, return TryResult(_A_).
+(based on [_Expression_](https://tc39.es/ecma262/#sec-comma-operator-runtime-semantics-evaluation))
+
+1. Let _A_ be Completion(Evaluation of _AssignmentExpression_).
+2. If _A_ is an abrupt completion, return TryExpressionResult(_A_).
 3. Let _B_ be Completion(GetValue(_A_))
-4. Return TryResult(_B_).
+4. Return TryExpressionResult(_B_).
 
-### TryResult abstract operation
+### TryExpressionResult abstract operation
 
-The abstract operation TryResult takes argument _completionRecord_ (a Completion Record) and returns a new instance of the TryResult class. It performs the following steps when called:
+The abstract operation TryExpressionResult takes argument _result_ (a Completion Record) and returns a new instance of the TryResult class. It performs the following steps when called:
 
-1. If _completionRecord_ is a normal completion, return `new TryResult(true, undefined, completionRecord.[[VALUE]])`.
-2. If _completionRecord_ is a throw completion, return `new TryResult(false, completionRecord.[[VALUE]], undefined)`.
-3. Otherwise, this is an "editorial error". I'm not sure what's supposed to happen if it isn't a normal or throw completion, because those aren't supposed to be valid completions in an expression, as far as I'm aware. 
+1. If _result_ is a normal completion, return `TryResult.ok(result.[[VALUE]])`.
+2. If _result_ is a throw completion, return `TryResult.error(result.[[VALUE]])`.
+3. I don't know what to do with the other completions or why they would come from an expression.
 
 ### The underlying requirements
 
@@ -386,6 +390,7 @@ const [success, validationError, user] = try User.parse(myJson)
 ```
 
 ### **Manual Creation of a `TryResult`**  
+
 You can also create a `TryResult` instance manually using its constructor or static methods:
 
 ```js
@@ -398,6 +403,28 @@ const result = new TryResult(false, error)
 const result = TryResult.error(error)
 ```
 
+### TypeScript already supports type narrowing 
+
+```ts
+function examples() {
+    const [ok, error, result] = Result.ok("hello");
+    // inside the if statement, the types are correct.
+    if (ok) {
+        const test: string = result;
+        const err: undefined = error;
+    } else {
+        const test: undefined = result;
+        const err: unknown = error;
+    }
+    // outside the if statement, we have Schroedinger types
+    const test: string | undefined = result;
+    const err: unknown = error;
+    // return if there is an error
+    if(!ok) return;
+    // the result type is again a string
+    const test2: string = result;
+}
+```
 
 ### A fairly contrived example using Typescript
 
@@ -405,12 +432,12 @@ const result = TryResult.error(error)
 myArrayMapper(try await (await fetchRows()).json(), e => try mapSomething(e), (try assertSomething()).ok);
 
 function myArrayMapper<T, U>(
-  data: TryResult<boolean, any, T[]>, 
-  mapper: (e: T) => TryResult<boolean, any, U>, 
+  data: TryResult<T[]>, 
+  mapper: (e: T) => TryResult<U>, 
   hasCheck: boolean
 ): { 
-  bad: TryResult<false, Error, undefined>, 
-  good: TryResult<true, undefined, U>[],
+  bad: TryResultError[], 
+  good: TryResultValue<U>[],
   hasCheck: boolean
 } {
   if(!data.ok) throw new Error("Failed to get the rows");
@@ -444,7 +471,7 @@ If you want to suppress the error (which is **different** from ignoring the poss
 
 ```ts
 // This suppresses a possible error (Ignores and doesn't re-throw)
-const [ok, _, data] = try fn()
+const [, , data] = try fn()
 ```
 
 This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
@@ -454,7 +481,7 @@ The above method, often referred to as "try-catch calaboca" (a Brazilian term), 
 ```ts
 let data
 try {
-  data = fn()
+  [,,data] = fn()
 } catch {}
 ```
 
