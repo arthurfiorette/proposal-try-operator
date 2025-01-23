@@ -24,16 +24,14 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
 - [Try Expression](#try-expression)
-  - [Same parsing rules as assignment expression, with one caveat](#same-parsing-rules-as-assignment-expression-with-one-caveat)
-    - [(Like the arrow function, you must surround object literals in parenthesis.)](#like-the-arrow-function-you-must-surround-object-literals-in-parenthesis)
-    - [It does not create a new block and cannot protect non-expressions.](#it-does-not-create-a-new-block-and-cannot-protect-non-expressions)
-    - [It can completely protect a single expression.](#it-can-completely-protect-a-single-expression)
-  - [any valid expressions can be used](#any-valid-expressions-can-be-used)
-  - [Highest precedence possible](#highest-precedence-possible)
+  - [Same parsing rules as assignment expression (with one caveat)](#same-parsing-rules-as-assignment-expression-with-one-caveat)
+  - [(Surround object literal with parentheses)](#surround-object-literal-with-parentheses)
   - [Statements are not expressions](#statements-are-not-expressions)
+  - [Any valid expressions can be used](#any-valid-expressions-can-be-used)
+  - [Highest precedence possible](#highest-precedence-possible)
   - [Never throws](#never-throws)
-  - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Void Operations](#void-operations)
+  - [Easily transpiled](#easily-transpiled)
 - [Syntax](#syntax)
   - [Runtime Semantics: Evaluation](#runtime-semantics-evaluation)
   - [TryExpressionResult abstract operation](#tryexpressionresult-abstract-operation)
@@ -51,6 +49,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Authors](#authors)
 - [Inspiration](#inspiration)
 - [License](#license)
+- [Extra Examples](#extra-examples)
 
 
 <br />
@@ -154,80 +153,39 @@ The `try` expression is an Assignment Expression and consists of the `try` keywo
 
 Like the `yield`, `await`, and `typeof` keywords, it has a result. Its result is an instance of the [`TryResult` class](#tryresult-class).
 
-### Same parsing rules as assignment expression, with one caveat
+### Same parsing rules as assignment expression (with one caveat)
 
-#### (Like the arrow function, you must surround object literals in parenthesis.)
+### (Surround object literal with parentheses)
+
+When using `try` with an object literal, the literal must be enclosed in parenthesis:
 
 ```js
-try { myProperty: "test" } // looks like a try statement missing catch
+try { myProperty: "test" } // looks like a try statement missing a catch
 try ({ myProperty: "test" }); // valid, like an arrow function
+const result = try ({ data: await fetch("url", { headers: {} }) })
 ```
 
-#### It does not create a new block and cannot protect non-expressions. 
+This behavior mirrors how JavaScript differentiates blocks and object literals:
+
+<!-- prettier-ignore -->
+```js
+{ a: 1 } // empty block with a label
+({ a: 1 }) // object with a key `a` and a number `1`
+() => ({ a: 1 }) // arrow function body
+try { } //looks like a try statement missing a catch
+```
+
+### Statements are not expressions
+
+It does not create a new block and cannot protect non-expressions. 
 
 ```js
-try const test = "something"; // syntax error
-try throw new Error("shorthand") // syntax error
-try return something; // syntax error
+const result = try throw new Error("Something went wrong") // Syntax error!
+try using resource = new Resource() // Syntax error!
+try if("test" === "test"){} // Syntax error!
 ```
 
-#### It can completely protect a single expression.
-
-- the entire expression body of an arrow function: 
-```js
-const objector = () => try ({ objection: "I object" });
-
-const tryParseJSON = (data) => try JSON.parse(data);
-const [ok,,json] = tryParseJSON(body);
-if(!ok) return res.status(400).end();
-```
-- the entire value of an assignment operation or variable declaration
-```js
-this.test = try value;
-const test2 = this.test = try value;
-const test3 = try ({ maybe: couldThrow() });
-function test(arg = try default, arg2 = true) {}
-
-const test3 = try this.test = try value;
-if(test3.ok && test3.value.ok) 
-  assert.equal(test3.value.value, value);
-```
-- an entire yield expression
-```js
-// yield the try and try the yeild.
-const result = try yield try expression
-```
-- an entire single expression.
-
-```js
-// parentheses create a single expression
-try (checkSomething(), checkSomething2());
-
-// each comma-separated expression
-(try checkSomething(), try checkSomething2());
-
-// each argument
-processTryResults(try getData1(), try getData2());
-
-// each comma-separated expression in `if`, `for`, `while`, and `do while` 
-let hasAuthToken = false; 
-if (try hasAuthToken = checkCookie(), !hasAuthToken) { return false; }
-
-// Remember, `TryResult` is always truthy, so don't use it for the last expression
-while(try checkSomething(), try checkSomethingElse()) { /* infinite loop */ }
-
-// each comma-separated expression in a return or throw statement.
-return try uselessAssert(), try checkSomething();
-throw try uselessAssert(), try checkSomething(), new Error();
-
-// each comma-separated expression in a plain statement.
-try checkSomething(), try checkSomething2();
-```
-
-An object literal `{ "my": "object" }` must always be surrounded by parentheses if the try keyword is directly before it, no matter where it is used. 
-
-
-### any valid expressions can be used
+### Any valid expressions can be used
 
 ```js
 const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
@@ -241,13 +199,6 @@ const result = try checkData() || doSomething() && logResult();
 const result = try checkData() ? doSomething() : logResult();
 ```
 
-### Statements are not expressions
-
-```js
-const result = try throw new Error("Something went wrong") // Syntax error!
-const result = try using resource = new Resource() // Syntax error!
-try if("test" === "test"){} // Syntax error! Use a try block instead
-```
 
 ### Never throws
 
@@ -267,24 +218,6 @@ Regardless of the type of error that might occur, `try` will catch it. For examp
 - Any other exception that can arise during evaluation of that expression. 
 
 All potential errors are safely caught and encapsulated within the `try` expression.
-
-### Parenthesis Required for Object Literals
-
-When using `try` with an object literal, the literal must be enclosed in parenthesis:
-
-```js
-const result = try ({ data: await fetch("url", { headers: {} }) })
-```
-
-This behavior mirrors how JavaScript differentiates blocks and object literals:
-
-<!-- prettier-ignore -->
-   ```js
-    { a: 1 } // empty block with a label
-   ({ a: 1 }) // object with a key `a` and a number `1`
-   () => ({ a: 1 }) // arrow function body
-   try { } //looks like a try statement missing a catch
-   ```
 
 ### Void Operations
 
@@ -310,6 +243,27 @@ function work() {
   void try fs.unlinkSync("temp.txt")
 }
 ```
+
+### Easily transpiled
+
+The feature can easily be transpiled for older runtimes with all the same guarantees. 
+
+```js
+const result = try await expr1
+```
+
+This is "equivalent" to:
+
+```js
+let _result // transpiler assigns private variable
+try {
+  _result = TryResult.ok(await expr1) 
+} catch (error) {
+  _result = TryResult.error(error) 
+}
+const result = _result // const enforced at runtime
+```
+
 
 <br />
 
@@ -576,3 +530,84 @@ This proposal is in its early stages, and we welcome your input to help refine i
 This proposal is licensed under the [MIT License](./LICENSE).
 
 <br />
+
+## Extra Examples
+
+
+**It can completely protect a single expression.**
+
+- the entire expression body of an arrow function: 
+```js
+const objector = () => try ({ objection: "I object" });
+
+const tryParseJSON = (data) => try JSON.parse(data);
+const [ok,,json] = tryParseJSON(body);
+if(!ok) return res.status(400).end();
+```
+- the entire value of an assignment operation or variable declaration
+```js
+this.test = try value;
+const test2 = this.test = try value;
+const test3 = try ({ maybe: couldThrow() });
+function test(arg = try default, arg2 = true) {}
+
+const test3 = try this.test = try value;
+if(test3.ok && test3.value.ok) 
+  assert.equal(test3.value.value, value);
+```
+- an entire yield expression
+```js
+// yield the try and try the yeild.
+const result = try yield try expression
+```
+- an entire single expression.
+
+```js
+// parentheses create a single expression
+try (checkSomething(), checkSomething2());
+
+// each comma-separated expression
+(try checkSomething(), try checkSomething2());
+
+// each argument
+processTryResults(try getData1(), try getData2());
+
+// each comma-separated expression in `if`, `for`, `while`, and `do while` 
+let hasAuthToken = false; 
+if (try hasAuthToken = checkCookie(), !hasAuthToken) { return false; }
+
+// Remember, `TryResult` is always truthy, so don't use it for the last expression
+while(try checkSomething(), try checkSomethingElse()) { /* infinite loop */ }
+
+// each comma-separated expression in a return or throw statement.
+return try uselessAssert(), try checkSomething();
+throw try uselessAssert(), try checkSomething(), new Error();
+
+// each comma-separated expression in a plain statement.
+try checkSomething(), try checkSomething2();
+```
+
+An object literal `{ "my": "object" }` must always be surrounded by parentheses if the try keyword is directly before it, no matter where it is used. 
+
+**TypeScript supports narrowing related types**
+
+```ts
+function examples() {
+  const [ok, error, result] = Result.ok("hello");
+  // inside the if statement, the types are correct.
+  if (ok) {
+    const test: string = result;
+    const err: undefined = error;
+  } else {
+    const test: undefined = result;
+    const err: unknown = error;
+  }
+  // outside the if statement, we have Schroedinger types
+  const test: string | undefined = result;
+  const err: unknown = error;
+  // return if there is an error
+  if(!ok) return;
+  // the result type is again a string
+  const test2: string = result;
+}
+```
