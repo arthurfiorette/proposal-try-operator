@@ -20,28 +20,31 @@ This proposal aims to address the ergonomic challenges of managing multiple, oft
 Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
 <hr />
-<!-- TOC -->
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
 - [Try Expression](#try-expression)
-    - [Same parsing rules as assignment expression, with one caveat](#same-parsing-rules-as-assignment-expression-with-one-caveat)
-    - [All valid expressions can be used](#all-valid-expressions-can-be-used)
-    - [Statements are not expressions](#statements-are-not-expressions)
-    - [Never throws](#never-throws)
-    - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
-    - [Void Operations](#void-operations)
+  - [Same parsing rules as assignment expression, with one caveat](#same-parsing-rules-as-assignment-expression-with-one-caveat)
+    - [(Like the arrow function, you must surround object literals in parenthesis.)](#like-the-arrow-function-you-must-surround-object-literals-in-parenthesis)
+    - [It does not create a new block and cannot protect non-expressions.](#it-does-not-create-a-new-block-and-cannot-protect-non-expressions)
+    - [It can completely protect a single expression.](#it-can-completely-protect-a-single-expression)
+  - [All valid expressions can be used](#all-valid-expressions-can-be-used)
+  - [Statements are not expressions](#statements-are-not-expressions)
+  - [Never throws](#never-throws)
+  - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
+  - [Void Operations](#void-operations)
 - [Syntax](#syntax)
-    - [Runtime Semantics: Evaluation](#runtime-semantics-evaluation)
-    - [TryResult abstract operation](#tryresult-abstract-operation)
-    - [The underlying requirements](#the-underlying-requirements)
+  - [Runtime Semantics: Evaluation](#runtime-semantics-evaluation)
+  - [TryExpressionResult abstract operation](#tryexpressionresult-abstract-operation)
+  - [The underlying requirements](#the-underlying-requirements)
 - [TryResult class](#tryresult-class)
-    - [Structure of a TryResult Instance](#structure-of-a-tryresult-instance)
-    - [Iterable Behavior](#iterable-behavior)
-    - [Manual Creation of a TryResult](#manual-creation-of-a-tryresult)
-    - [A fairly contrived example using Typescript](#a-fairly-contrived-example-using-typescript)
-- [Why Not data First?](#why-not-data-first)
-- [The Need for an ok Value](#the-need-for-an-ok-value)
+  - [**Structure of a `TryResult` Instance**](#structure-of-a-tryresult-instance)
+  - [**Iterable Behavior**](#iterable-behavior)
+  - [**Manual Creation of a `TryResult`**](#manual-creation-of-a-tryresult)
+  - [TypeScript already supports type narrowing](#typescript-already-supports-type-narrowing)
+  - [A fairly contrived example using Typescript](#a-fairly-contrived-example-using-typescript)
+- [Why Not `data` First?](#why-not-data-first)
+- [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [Caller's Approach](#callers-approach)
 - [Why a Proposal?](#why-a-proposal)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
@@ -49,8 +52,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Inspiration](#inspiration)
 - [License](#license)
 
-<!-- /TOC -->
-<!-- /TOC -->
 
 <br />
 
@@ -248,7 +249,7 @@ const result = try this.test = this.test2 = await fetch(); // covers everything
 ```js
 const result = try throw new Error("Something went wrong") // Syntax error!
 const result = try return something(); // um, you're returning. Wrap it in a try block.
-const result = if("test" === "test"){} // Syntax error anyway, just wrap it in a try block
+const result = try if("test" === "test"){} // Syntax error anyway, just wrap it in a try block
 try if("test" === "test"){} // still a syntax error. Wrap it in a try block
 ```
 
@@ -258,7 +259,7 @@ The `try` expression follows the same rules as the try block statement.
 
 ```js
 const [ok, error, result] = try some.thing()
-// is the same as
+// executes the same as
 try { some.thing() } catch (error) {}
 ```
 
@@ -471,7 +472,7 @@ If you want to suppress the error (which is **different** from ignoring the poss
 
 ```ts
 // This suppresses a possible error (Ignores and doesn't re-throw)
-const [, , data] = try fn()
+const [ok, , data] = try fn()
 ```
 
 This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
@@ -481,7 +482,7 @@ The above method, often referred to as "try-catch calaboca" (a Brazilian term), 
 ```ts
 let data
 try {
-  [,,data] = fn()
+  data = fn()
 } catch {}
 ```
 
