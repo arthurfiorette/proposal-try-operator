@@ -185,6 +185,8 @@ try using resource = new Resource() // Syntax error!
 try if("test" === "test"){} // Syntax error!
 ```
 
+A detailed discussion about this topic is available at [GitHub Issue #54](https://github.com/arthurfiorette/proposal-try-statements/issues/54) for those interested.
+
 ### Any valid expressions can be used
 
 ```js
