@@ -353,7 +353,7 @@ If you want to suppress the error (which is **different** from ignoring the poss
 
 ```ts
 // This suppresses a possible error (Ignores and doesn't re-throw)
-const [ok, _, data] = try fn()
+const [ok, , data] = try fn()
 ```
 
 This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
