@@ -1,14 +1,14 @@
 <br />
 
-<h1>ECMAScript Try Statements</h1>
+<h1>ECMAScript Try Operator</h1>
 
 > [!WARNING]  
-> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Statements`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-statements/tree/proposal-safe-assignment-operator)._
+> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Operator`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-operator/tree/proposal-safe-assignment-operator)._
 
 <br />
 
 <div align="center">
-  <img src="./assets/banner.png" alt="ECMAScript Try Statements Proposal" />
+  <img src="./assets/banner.png" alt="ECMAScript Try Operator Proposal" />
 </div>
 
 <br />
@@ -22,10 +22,10 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
-- [Try Statement](#try-statement)
-  - [Cannot be inlined.](#cannot-be-inlined)
+- [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
-  - [Any valid expression can be use](#any-valid-expression-can-be-use)
+  - [Can be inlined.](#can-be-inlined)
+  - [Any valid expression can be used](#any-valid-expression-can-be-used)
     - [`await` is not an exception](#await-is-not-an-exception)
   - [Statements are not expressions](#statements-are-not-expressions)
   - [Never throws](#never-throws)
@@ -132,22 +132,35 @@ A `try` statement provide significant flexibility and arguably result in more re
 
 <br />
 
-## Try Statement
+## Try Operator
 
-The `try` operator consists of the `try` keyword followed by an expression. Its result is an instance of the [`Result`](#result-class).
+The `try` operator consists of the `try` keyword followed by an expression. It results in an instance of the [`Result`](#result-class).
 
-### Cannot be inlined.
+<details>
 
-Similar to `throw`, `return`, and `await`
+<summary>
+All of its usages are just a combination of the above said rules.
+</summary>
 
 ```js
-array.map((fn) => try fn()).filter((result) => result.ok) // Syntax error!
+const a = try something()
+const [[ok, err, val]] = [try something()]
+const [ok, err, val] = try something()
+array.map(fn => try fn())
+yield try something()
+try yield something()
+try await something()
+try (a instanceof b)
+(try a) instanceof Result
+const a = try try try try try try 1
 ```
+
+</details>
 
 ### Expressions are evaluated in a self-contained `try/catch` block
 
 ```js
-const result = try expr1
+const result = try expression
 ```
 
 This is "equivalent" to:
@@ -155,14 +168,22 @@ This is "equivalent" to:
 ```js
 let _result
 try {
-  _result = Result.ok(expr1)
+  _result = Result.ok(expression)
 } catch (error) {
   _result = Result.error(error)
 }
 const result = _result
 ```
 
-### Any valid expression can be use
+### Can be inlined.
+
+Similar to `void`, `typeof`, `yield` and `new`:
+
+```js
+array.map((fn) => try fn()).filter((result) => result.ok) // works :)
+```
+
+### Any valid expression can be used
 
 ```js
 const result = try data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
@@ -181,8 +202,6 @@ try {
 }
 const result = _result
 ```
-
-`try` cannot nest since its a statement.
 
 #### `await` is not an exception
 
@@ -221,7 +240,7 @@ try {
 const result = _result
 ```
 
-A detailed discussion about this topic is available at [GitHub Issue #54](https://github.com/arthurfiorette/proposal-try-statements/issues/54) for those interested.
+A detailed discussion about this topic is available at [GitHub Issue #54](https://github.com/arthurfiorette/proposal-try-operator/issues/54) for those interested.
 
 ### Never throws
 
@@ -238,7 +257,7 @@ Regardless of the type of error that might occur, `try` will catch it. For examp
 - If accessing the `thing` property on `some` throws an error.
 - Any other exception that can arise on that line of code.
 
-All potential errors are safely caught and encapsulated within the `try` statements.
+All potential errors are safely caught and encapsulated within the `try` operator expression.
 
 ### Parenthesis Required for Object Literals
 
@@ -256,7 +275,7 @@ This behavior mirrors how JavaScript differentiates blocks and object literals:
    ({ a: 1 }) // object with a key `a` and a number `1`
    ```
 
-A detailed discussion about this topic is available at [GitHub Issue #55](https://github.com/arthurfiorette/proposal-try-statements/issues/55) for those interested.
+A detailed discussion about this topic is available at [GitHub Issue #55](https://github.com/arthurfiorette/proposal-try-operator/issues/55) for those interested.
 
 ### Void Operations
 
@@ -370,7 +389,7 @@ try {
 }
 ```
 
-A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/proposal-try-statements/issues/13) for those interested.
+A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/proposal-try-operator/issues/13) for those interested.
 
 <br />
 
@@ -400,7 +419,7 @@ There is no guarantee that `createException` always returns an exception. Someon
 
 Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
 
-For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-statements/issues/30).
+For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-operator/issues/30).
 
 <br />
 
