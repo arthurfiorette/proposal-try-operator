@@ -1,7 +1,7 @@
 // Impl note: Since its not possible to make iterators return different types based
 // on the iteration state (yet) a union with a tuple is the only solution. Once its
-// finished, this whole type branching can be removed into a single  object union containing:
-// { ok: boolean, error: unknown, value: V, [Symbol.iterator]: () => Iterator<(something)> }
+// finished, this whole type branching can be removed into a single object union containing:
+// { ok: boolean, error: unknown, value: V, [Symbol.iterator]: () => Iterator<(some syntax)> }
 //
 // See https://github.com/microsoft/TypeScript/issues/42033
 

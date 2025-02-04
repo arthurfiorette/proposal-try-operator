@@ -330,7 +330,7 @@ The `Result` class represents the form of the value returned by the `try` operat
    ```
 
 2. **Iterable Behavior**  
-   A `Result` instance is iterable, enabling destructuring and different naming per case:
+   A `Result` instance is iterable, enabling destructuring and different variable names:
 
    ```js
    const [success, validationError, user] = try User.parse(myJson)
@@ -341,11 +341,9 @@ The `Result` class represents the form of the value returned by the `try` operat
 
    ```js
    // Creating a successful result
-   const result = new Result(true, undefined, value)
    const result = Result.ok(value)
 
    // Creating an error result
-   const result = new Result(false, error)
    const result = Result.error(error)
    ```
 
