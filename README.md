@@ -146,13 +146,13 @@ All of its usages are just a combination of the above said rules.
 const a = try something()
 const [[ok, err, val]] = [try something()]
 const [ok, err, val] = try something()
-array.map(fn => try fn())
-yield try something()
-try yield something()
-try await something()
-try (a instanceof b)
+array.map(fn => try fn()) // Result[]
+yield try something() // yields Result
+try yield something() // Result<T> where T is iterator().next(T)
+try await something() // Result<Awaited<T>>
+try (a instanceof b) // catches Uncaught TypeError: Right-hand side of 'instanceof' is not an object
 (try a) instanceof Result
-const a = try try try try try try 1
+const a = try (try (try (try (try (try 1))))) // Result<Result<Result<Result<Result<Result<number>>>>
 ```
 
 </details>
