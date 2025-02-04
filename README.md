@@ -150,9 +150,9 @@ array.map(fn => try fn()) // Result[]
 yield try something() // yields Result
 try yield something() // Result<T> where T is iterator().next(T)
 try await something() // Result<Awaited<T>>
-try (a instanceof b) // catches Uncaught TypeError: Right-hand side of 'instanceof' is not an object
+try (a instanceof b) // catches TypeError: Right-hand side of 'instanceof' is not an object
 (try a) instanceof Result
-const a = try (try (try (try (try (try 1))))) // Result<Result<Result<Result<Result<Result<number>>>>
+const a = try (try (try (try (try 1)))) // Result<Result<Result<Result<Result<number>>>
 ```
 
 </details>
