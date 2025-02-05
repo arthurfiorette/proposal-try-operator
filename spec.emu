@@ -4,98 +4,134 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
 <pre class="metadata">
-title: ECMAScript Safe Assignment Operator
+title: ECMAScript Try Operator
 stage: -1
-contributors: Arthur Fiorette
+contributors: Arthur Fiorette, Arlen Beiler
 </pre>
 
 <emu-biblio href="node_modules/@tc39/ecma262-biblio/biblio.json"></emu-biblio>
 
-<emu-intro id="intro">
-  <h1>Introduction</h1>
-  <p>This proposal introduces syntax and semantics for safe assignments</p>
-</emu-intro>
+<emu-clause id="sec-assignment-operators">
+  <h1>Assignment Operators</h1>
+  <h2>Syntax</h2>
+  <emu-grammar type="definition">
+    AssignmentExpression[In, Yield, Await] :
+      TryExpression[?In, ?Yield, ?Await]
+    TryExpression[In, Yield, Await] :
+      `try` [no LineTerminator here] [lookahead != `{`] AssignmentExpression[?In, ?Yield, ?Await]
+  </emu-grammar>
 
-<emu-clause id="sec-ecmascript-data-types-and-values" aoid="Type">
-  <h1>ECMAScript Data Types and Values</h1>
-  <emu-clause id="sec-ecmascript-language-types">
-    <h1>ECMAScript Language Types</h1>
-    <emu-clause id="sec-ecmascript-language-types-symbol-type">
-      <h1>The Symbol Type</h1>
-      <emu-clause id="sec-well-known-symbols">
-        <h1>Well-Known Symbols</h1>
-        <emu-table id="table-1" caption="Well-known Symbols">
-          <table>
-            <tbody>
-            <tr>
-              <th>
-                Specification Name
-              </th>
-              <th>
-                [[Description]]
-              </th>
-              <th>
-                Value and Purpose
-              </th>
-            </tr>
-            <tr>
-              <td>
-                <ins>@@result</ins>
-              </td>
-              <td>
-                <ins>`"Symbol.result"`</ins>
-              </td>
-              <td>
-                <ins>A method that wraps function call result into a tuple array. Called by the semantics of `?=` operator and `ResultableStack` objects.</ins>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </emu-table>
-      </emu-clause>
-    </emu-clause>
-    <emu-clause id="sec-object-type">
-      <h1>The Object Type</h1>
-      <emu-clause id="sec-well-known-intrinsic-objects">
-        <h1>Well-Known Intrinsic Objects</h1>
-        <emu-table id="table-well-known-intrinsic-objects" caption="Well-Known Intrinsic Objects" oldids="table-7">
-          <table>
-            <tr>
-              <th>
-                Intrinsic Name
-              </th>
-              <th>
-                Global Name
-              </th>
-              <th>
-                ECMAScript Language Association
-              </th>
-            </tr>
-            <tr>
-              <td>
-                %Function%
-              </td>
-              <td>
-                `Function`
-              </td>
-              <td>
-                The Function constructor (<emu-xref href="#sec-function-constructor"></emu-xref>)
-              </td>
-            </tr>
-            <tr>
-              <td>
-                %Promise%
-              </td>
-              <td>
-                `Promise`
-              </td>
-              <td>
-                The Promise object (<emu-xref href="#sec-promise-objects"></emu-xref>)
-              </td>
-            </tr>
-          </table>
-        </emu-table>
-      </emu-clause>
-    </emu-clause>
+  <emu-clause id="sec-comma-operator-runtime-semantics-evaluation" type="sdo">
+    <h1>Runtime Semantics: Evaluation</h1>
+    <emu-grammar>TryExpression : `try` AssignmentExpression</emu-grammar>
+    <emu-alg>
+      1. Let _A_ be Completion(Evaluation of |Expression|).
+      1. If _A_ is an abrupt completion, return ? TryExpressionResult(_A_).
+      1. Let _B_ be Completion(GetValue(_A_)).
+      1. Return ? TryExpressionResult(_B_).
+    </emu-alg>
+    <emu-note>
+      <p>GetValue must be called even though its value is not used because it may have observable side-effects.</p>
+    </emu-note>
   </emu-clause>
+
+  <emu-clause id="sec-try-expression-result" type="abstract operation">
+    <h1>
+      TryExpressionResult (
+        _result_: a Completion Record,
+      ): either a normal completion containing a TryResult or an abrupt completion
+    </h1>
+    <dl class="header">
+    </dl>
+    <emu-alg>
+      1. If _result_ is a normal completion, return TryResult.ok(_result_.[[VALUE]]).
+      1. If _result_ is a throw completion, return TryResult.error(_result_.[[VALUE]]).
+      1. Return ? _result_.
+    </emu-alg>
+  </emu-clause>
+  <emu-clause id="sec-try-expression-result-ok" type="abstract operation">
+    <h1>
+      TryResult.ok (
+        _value_: an ECMAScript language value,
+      ): a TryResult
+    </h1>
+    <dl class="header">
+      <dt>description</dt>
+      <dd>It is the abstract equivelant of calling `TryResult.ok(value)`</dd>
+    </dl>
+  </emu-clause>
+  <emu-clause id="sec-try-expression-result-error" type="abstract operation">
+    <h1>
+      TryResult.error (
+        _value_: an ECMAScript language value,
+      ): a TryResult
+    </h1>
+    <dl class="header">
+      <dt>description</dt>
+      <dd>It is the abstract equivelant of calling `TryResult.error(value)`</dd>
+    </dl>
+  </emu-clause>
+</emu-clause>
+
+<emu-clause id="sec-well-known-intrinsic-objects">
+  <h1>Well-Known Intrinsic Objects</h1>
+  <emu-table id="table-well-known-intrinsic-objects" caption="Well-Known Intrinsic Objects" oldids="table-7">
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Intrinsic Name
+          </th>
+          <th>
+            Global Name
+          </th>
+          <th>
+            ECMAScript Language Association
+          </th>
+        </tr>
+      </thead>
+      <tr>
+        <td>
+          %TryResult%
+        </td>
+        <td>
+          `TryResult`
+        </td>
+        <td>
+          The `TryResult` constructor (<emu-xref href="#sec-try-result-constructor"></emu-xref>)
+        </td>
+      </tr>
+    </table>
+  </emu-table>
+</emu-clause>
+
+<emu-clause id="sec-try-result-constructor">
+  <h1>The TryResult Constructor</h1>
+  <p>The TryResult constructor:</p>
+  <ul>
+    <li>is <dfn variants="TryResult">%TryResult%</dfn>.</li>
+    <li>is the initial value of the *"TryResult"* property of the global object.</li>
+    <li>is the functional equivelant of the following code:
+      <pre><code class="javascript">
+        class TryResult {
+          constructor(ok, error, value) {
+            this.ok = ok
+            this.error = error
+            this.value = value
+          }
+          *[Symbol.iterator]() {
+            yield this.ok
+            yield this.error
+            yield this.value
+          }
+          static ok(value) {
+            return new TryResult(true, undefined, value)
+          }
+          static error(error) {
+            return new TryResult(false, error, undefined)
+          }
+        }
+      </code></pre>
+    </li>
+  </ul>
 </emu-clause>

@@ -483,6 +483,7 @@ This proposal is in its early stages, and we welcome your input to help refine i
 ## Authors
 
 - [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
+- [Arlen Beiler](https://github.com/Arlen22)
 
 <br />
 
