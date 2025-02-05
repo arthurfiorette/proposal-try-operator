@@ -31,7 +31,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Never throws](#never-throws)
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Void Operations](#void-operations)
-- [Result class](#result-class)
+- [TryResult class](#tryresult-class)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [Caller's Approach](#callers-approach)
@@ -126,7 +126,7 @@ A `try` statement provide significant flexibility and arguably result in more re
 
 ## What This Proposal Does Not Aim to Solve
 
-1. **Strict Type Enforcement for Errors**: The `throw` statement in JavaScript can throw any type of value. This proposal does not impose type safety on error handling and will not introduce types into the language. For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _(This also means no generic error type for [Result](#result-class))_
+1. **Strict Type Enforcement for Errors**: The `throw` statement in JavaScript can throw any type of value. This proposal does not impose type safety on error handling and will not introduce types into the language. For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _(This also means no generic error type for [TryResult](#tryresult-class))_
 
 2. **Automatic Error Handling**: While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
 
@@ -134,7 +134,7 @@ A `try` statement provide significant flexibility and arguably result in more re
 
 ## Try Operator
 
-The `try` operator consists of the `try` keyword followed by an expression. It results in an instance of the [`Result`](#result-class).
+The `try` operator consists of the `try` keyword followed by an expression. It results in an instance of the [`TryResult`](#tryresult-class).
 
 <details>
 
@@ -146,13 +146,13 @@ All of its usages are just a combination of the above said rules.
 const a = try something()
 const [[ok, err, val]] = [try something()]
 const [ok, err, val] = try something()
-array.map(fn => try fn()) // Result[]
-yield try something() // yields Result
-try yield something() // Result<T> where T is iterator().next(T)
-try await something() // Result<Awaited<T>>
+array.map(fn => try fn()) // TryResult[]
+yield try something() // yields TryResult
+try yield something() // TryResult<T> where T is iterator().next(T)
+try await something() // TryResult<Awaited<T>>
 try (a instanceof b) // catches TypeError: Right-hand side of 'instanceof' is not an object
-(try a) instanceof Result
-const a = try (try (try (try (try 1)))) // Result<Result<Result<Result<Result<number>>>
+(try a) instanceof TryResult
+const a = try (try (try (try (try 1)))) // TryResult<TryResult<TryResult<TryResult<TryResult<number>>>
 ```
 
 </details>
@@ -168,9 +168,9 @@ This is "equivalent" to:
 ```js
 let _result
 try {
-  _result = Result.ok(expression)
+  _result = TryResult.ok(expression)
 } catch (error) {
-  _result = Result.error(error)
+  _result = TryResult.error(error)
 }
 const result = _result
 ```
@@ -194,11 +194,11 @@ This is "equivalent" to:
 ```js
 let _result
 try {
-  _result = Result.ok(
+  _result = TryResult.ok(
     data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
   )
 } catch (error) {
-  _result = Result.error(error)
+  _result = TryResult.error(error)
 }
 const result = _result
 ```
@@ -214,9 +214,9 @@ This is "equivalent" to:
 ```js
 let _result
 try {
-  _result = Result.ok(await fetch("https://api.example.com/data"))
+  _result = TryResult.ok(await fetch("https://api.example.com/data"))
 } catch (error) {
-  _result = Result.error(error)
+  _result = TryResult.error(error)
 }
 const result = _result
 ```
@@ -233,9 +233,9 @@ This is because their "equivalent" would also result in a syntax error:
 ```js
 let _result
 try {
-  _result = Result.ok(throw new Error("Something went wrong")) // Syntax error!
+  _result = TryResult.ok(throw new Error("Something went wrong")) // Syntax error!
 } catch (error) {
-  _result = Result.error(error)
+  _result = TryResult.error(error)
 }
 const result = _result
 ```
@@ -304,14 +304,14 @@ function work() {
 
 <br />
 
-## Result class
+## TryResult class
 
-> Please see [`polyfill.d.ts`](./polyfill.d.ts) and [`polyfill.js`](./polyfill.js) for a basic implementation of the `Result` class.
+> Please see [`polyfill.d.ts`](./polyfill.d.ts) and [`polyfill.js`](./polyfill.js) for a basic implementation of the `TryResult` class.
 
-The `Result` class represents the form of the value returned by the `try` operator.
+The `TryResult` class represents the form of the value returned by the `try` operator.
 
-1. **Structure of a `Result` Instance**  
-   A `Result` instance contains three properties:
+1. **Structure of a `TryResult` Instance**  
+   A `TryResult` instance contains three properties:
 
    - **`ok`**: A boolean indicating whether the expression executed successfully.
    - **`error`**: The error thrown during execution, or `undefined` if no error occurred.
@@ -330,21 +330,21 @@ The `Result` class represents the form of the value returned by the `try` operat
    ```
 
 2. **Iterable Behavior**  
-   A `Result` instance is iterable, enabling destructuring and different variable names:
+   A `TryResult` instance is iterable, enabling destructuring and different variable names:
 
    ```js
    const [success, validationError, user] = try User.parse(myJson)
    ```
 
-3. **Manual Creation of a `Result`**  
-   You can also create a `Result` instance manually using its constructor or static methods:
+3. **Manual Creation of a `TryResult`**  
+   You can also create a `TryResult` instance manually using its constructor or static methods:
 
    ```js
    // Creating a successful result
-   const result = Result.ok(value)
+   const result = TryResult.ok(value)
 
    // Creating an error result
-   const result = Result.error(error)
+   const result = TryResult.error(error)
    ```
 
 <br />
@@ -451,7 +451,7 @@ With that in mind, improvements in error handling can be approached in two ways:
    }
    ```
 
-Both approaches achieve the same goal, but the second one requires refactoring all implementations into a new format. This is how languages like Go and Rust handle errors, returning a tuple of an error and a value or a `Result` object, respectively. While the callee-based approach can arguably be better, it succeeded in those languages because it was adopted from the very beginning, rather than introduced as a later addition.
+Both approaches achieve the same goal, but the second one requires refactoring all implementations into a new format. This is how languages like Go and Rust handle errors, returning a tuple of an error and a value or a `TryResult` object, respectively. While the callee-based approach can arguably be better, it succeeded in those languages because it was adopted from the very beginning, rather than introduced as a later addition.
 
 This proposal accounts for this by moving the transformation of errors into values to the **caller** level, preserving the familiar semantics and placement of `try/catch`. This approach ensures backward compatibility with existing code.
 
