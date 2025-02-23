@@ -1,10 +1,19 @@
 <!doctype html>
-<head><meta charset="utf-8"><meta property="og:image" content="https://tc39.es/ecmarkup/ecma-logo.png"><meta property="og:title" content="ECMAScript Safe Assignment Operator"><meta property="og:description" content="Introduction
-  This proposal introduces syntax and semantics for safe assignments">
+<head><meta charset="utf-8"><meta property="og:image" content="https://tc39.es/ecmarkup/ecma-logo.png"><meta property="og:title" content="ECMAScript Try Operator"><meta property="og:description" content="Assignment Operators
+  Syntax
+  
+    AssignmentExpression[In, Yield, Await] :
+      TryExpression[?In, ?Yield, ?Await]
+    TryExpression[In, Yield, Await] :
+      `try` [no LineTerminator here] [lookahead != `{`] AssignmentExpression[?In, ?Yield, ?Await]
+  
+
+  
+    Runtime Semantics: Evaluation">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/base16/solarized-light.min.css"><link rel="stylesheet" href="./spec.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
 <script src="./spec.js"></script>
-<title>ECMAScript Safe Assignment Operator</title><script>'use strict';
+<title>ECMAScript Try Operator</title><script>'use strict';
 let sdoBox = {
   init() {
     this.$alternativeId = null;
@@ -1610,8 +1619,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-let sdoMap = JSON.parse(`{}`);
-let biblio = JSON.parse(`{"refsByClause":{},"entries":[{"type":"clause","id":"intro","titleHTML":"Introduction","number":""},{"type":"table","id":"table-1","number":1,"caption":"Table 1: Well-known Symbols"},{"type":"clause","id":"sec-well-known-symbols","titleHTML":"Well-Known Symbols","number":"1.1.1.1"},{"type":"clause","id":"sec-ecmascript-language-types-symbol-type","titleHTML":"The Symbol Type","number":"1.1.1"},{"type":"table","id":"table-well-known-intrinsic-objects","number":2,"caption":"Table 2: Well-Known Intrinsic Objects"},{"type":"clause","id":"sec-well-known-intrinsic-objects","titleHTML":"Well-Known Intrinsic Objects","number":"1.1.2.1"},{"type":"clause","id":"sec-object-type","titleHTML":"The Object Type","number":"1.1.2"},{"type":"clause","id":"sec-ecmascript-language-types","titleHTML":"ECMAScript Language Types","number":"1.1"},{"type":"op","aoid":"Type","refId":"sec-ecmascript-data-types-and-values"},{"type":"clause","id":"sec-ecmascript-data-types-and-values","titleHTML":"ECMAScript Data Types and Values","number":"1"},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"A"}]}`);
+let sdoMap = JSON.parse(`{"prod-dpSa2QXU":{"Evaluation":{"clause":"1.1","ids":["prod-PXeEcFj2"]}}}`);
+let biblio = JSON.parse(`{"refsByClause":{"sec-well-known-intrinsic-objects":["_ref_0","_ref_8"],"sec-comma-operator-runtime-semantics-evaluation":["_ref_1","_ref_2","_ref_11"],"sec-try-expression-result":["_ref_3","_ref_4","_ref_5"],"sec-try-expression-result-ok":["_ref_6"],"sec-try-expression-result-error":["_ref_7"],"sec-assignment-operators":["_ref_9","_ref_10"]},"entries":[{"type":"production","id":"prod-AssignmentExpression","name":"AssignmentExpression","referencingIds":["_ref_10","_ref_11"]},{"type":"production","id":"prod-TryExpression","name":"TryExpression","referencingIds":["_ref_9"]},{"type":"clause","id":"sec-comma-operator-runtime-semantics-evaluation","titleHTML":"Runtime Semantics: Evaluation","number":"1.1"},{"type":"op","aoid":"TryExpressionResult","refId":"sec-try-expression-result"},{"type":"clause","id":"sec-try-expression-result","title":"TryExpressionResult ( result )","titleHTML":"TryExpressionResult ( <var>result</var> )","number":"1.2","referencingIds":["_ref_1","_ref_2"]},{"type":"op","aoid":"TryResult.ok","refId":"sec-try-expression-result-ok"},{"type":"clause","id":"sec-try-expression-result-ok","title":"TryResult.ok ( value )","titleHTML":"TryResult.ok ( <var>value</var> )","number":"1.3","referencingIds":["_ref_4"]},{"type":"op","aoid":"TryResult.error","refId":"sec-try-expression-result-error"},{"type":"clause","id":"sec-try-expression-result-error","title":"TryResult.error ( value )","titleHTML":"TryResult.error ( <var>value</var> )","number":"1.4","referencingIds":["_ref_5"]},{"type":"clause","id":"sec-assignment-operators","titleHTML":"Assignment Operators","number":"1"},{"type":"table","id":"table-well-known-intrinsic-objects","number":1,"caption":"Table 1: Well-Known Intrinsic Objects"},{"type":"clause","id":"sec-well-known-intrinsic-objects","titleHTML":"Well-Known Intrinsic Objects","number":"2"},{"type":"term","term":"%TryResult%","refId":"sec-try-result-constructor"},{"type":"clause","id":"sec-try-result-constructor","titleHTML":"The TryResult Constructor","number":"3","referencingIds":["_ref_0","_ref_3","_ref_6","_ref_7","_ref_8"]},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"A"}]}`);
 ;let usesMultipage = false</script><style>/* IBM Plex fonts (Latin subset) have been downloaded from Google Fonts and modified to add support back in for the `zero` substitution (slashed zeroes) */
 
 /* https://fonts.googleapis.com/css2?family=IBM%20Plex%20Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap */
@@ -3288,102 +3297,122 @@ emu-intro {
 </ul></div><div id="menu-toggle"><svg xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%; stroke:currentColor" viewBox="0 0 120 120" width="54" height="54">
       <title>Menu</title>
       <path stroke-width="10" stroke-linecap="round" d="M30,60 h60  M30,30 m0,5 h60  M30,90 m0,-5 h60"></path>
-    </svg></div><div id="menu-spacer" class="menu-spacer"></div><div id="menu"><div id="menu-search"><input type="text" id="menu-search-box" placeholder="Search..."><div id="menu-search-results" class="inactive"></div></div><div id="menu-pins"><div class="menu-pane-header">Pins<button class="unpin-all">clear</button></div><ul id="menu-pins-list"></ul></div><div class="menu-pane-header">Table of Contents</div><div id="menu-toc"><ol class="toc"><li><span class="item-toggle-none"></span><a href="#intro" title="Introduction">Introduction</a></li><li><span class="item-toggle">+</span><a href="#sec-ecmascript-data-types-and-values" title="ECMAScript Data Types and Values"><span class="secnum">1</span> ECMAScript Data Types and Values</a><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-ecmascript-language-types" title="ECMAScript Language Types"><span class="secnum">1.1</span> ECMAScript Language Types</a><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-ecmascript-language-types-symbol-type" title="The Symbol Type"><span class="secnum">1.1.1</span> The Symbol Type</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-well-known-symbols" title="Well-Known Symbols"><span class="secnum">1.1.1.1</span> Well-Known Symbols</a></li></ol></li><li><span class="item-toggle">+</span><a href="#sec-object-type" title="The Object Type"><span class="secnum">1.1.2</span> The Object Type</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-well-known-intrinsic-objects" title="Well-Known Intrinsic Objects"><span class="secnum">1.1.2.1</span> Well-Known Intrinsic Objects</a></li></ol></li></ol></li></ol></li><li><span class="item-toggle-none"></span><a href="#sec-copyright-and-software-license" title="Copyright &amp; Software License"><span class="secnum">A</span> Copyright &amp; Software License</a></li></ol></div></div><div id="spec-container"><h1 class="version">Stage -1 Draft / February 4, 2025</h1><h1 class="title">ECMAScript Safe Assignment Operator</h1>
+    </svg></div><div id="menu-spacer" class="menu-spacer"></div><div id="menu"><div id="menu-search"><input type="text" id="menu-search-box" placeholder="Search..."><div id="menu-search-results" class="inactive"></div></div><div id="menu-pins"><div class="menu-pane-header">Pins<button class="unpin-all">clear</button></div><ul id="menu-pins-list"></ul></div><div class="menu-pane-header">Table of Contents</div><div id="menu-toc"><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-assignment-operators" title="Assignment Operators"><span class="secnum">1</span> Assignment Operators</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-comma-operator-runtime-semantics-evaluation" title="Runtime Semantics: Evaluation"><span class="secnum">1.1</span> RS: Evaluation</a></li><li><span class="item-toggle-none"></span><a href="#sec-try-expression-result" title="TryExpressionResult ( result )"><span class="secnum">1.2</span> TryExpressionResult ( <var>result</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-try-expression-result-ok" title="TryResult.ok ( value )"><span class="secnum">1.3</span> TryResult.ok ( <var>value</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-try-expression-result-error" title="TryResult.error ( value )"><span class="secnum">1.4</span> TryResult.error ( <var>value</var> )</a></li></ol></li><li><span class="item-toggle-none"></span><a href="#sec-well-known-intrinsic-objects" title="Well-Known Intrinsic Objects"><span class="secnum">2</span> Well-Known Intrinsic Objects</a></li><li><span class="item-toggle-none"></span><a href="#sec-try-result-constructor" title="The TryResult Constructor"><span class="secnum">3</span> The TryResult Constructor</a></li><li><span class="item-toggle-none"></span><a href="#sec-copyright-and-software-license" title="Copyright &amp; Software License"><span class="secnum">A</span> Copyright &amp; Software License</a></li></ol></div></div><div id="spec-container"><h1 class="version">Stage -1 Draft / February 23, 2025</h1><h1 class="title">ECMAScript Try Operator</h1>
 
 <emu-biblio href="node_modules/@tc39/ecma262-biblio/biblio.json"></emu-biblio>
 
-<emu-intro id="intro">
-  <h1>Introduction</h1>
-  <p>This proposal introduces syntax and semantics for safe assignments</p>
-</emu-intro>
+<emu-clause id="sec-assignment-operators">
+  <h1><span class="secnum">1</span> Assignment Operators</h1>
+  <h2>Syntax</h2>
+  <emu-grammar type="definition"><emu-production name="AssignmentExpression" params="In, Yield, Await" id="prod-AssignmentExpression">
+    <emu-nt params="In, Yield, Await"><a href="#prod-AssignmentExpression">AssignmentExpression</a><emu-mods><emu-params>[In, Yield, Await]</emu-params></emu-mods></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="mvp22rct">
+        <emu-nt params="?In, ?Yield, ?Await" id="_ref_9"><a href="#prod-TryExpression">TryExpression</a><emu-mods><emu-params>[?In, ?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+</emu-production>
+<emu-production name="TryExpression" params="In, Yield, Await" id="prod-TryExpression">
+    <emu-nt params="In, Yield, Await"><a href="#prod-TryExpression">TryExpression</a><emu-mods><emu-params>[In, Yield, Await]</emu-params></emu-mods></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="34mivnjw" id="prod-dpSa2QXU">
+        <emu-t>try</emu-t>
+        <emu-gann>[no <emu-nt><a href="https://tc39.es/ecma262/#prod-LineTerminator">LineTerminator</a></emu-nt> here]</emu-gann>
+        <emu-gann>[lookahead ≠ <emu-t>{</emu-t>]</emu-gann>
+        <emu-nt params="?In, ?Yield, ?Await" id="_ref_10"><a href="#prod-AssignmentExpression">AssignmentExpression</a><emu-mods><emu-params>[?In, ?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+</emu-production>
+</emu-grammar>
 
-<emu-clause id="sec-ecmascript-data-types-and-values" aoid="Type">
-  <h1><span class="secnum">1</span> ECMAScript Data Types and Values</h1>
-  <emu-clause id="sec-ecmascript-language-types">
-    <h1><span class="secnum">1.1</span> ECMAScript Language Types</h1>
-    <emu-clause id="sec-ecmascript-language-types-symbol-type">
-      <h1><span class="secnum">1.1.1</span> The Symbol Type</h1>
-      <emu-clause id="sec-well-known-symbols">
-        <h1><span class="secnum">1.1.1.1</span> Well-Known Symbols</h1>
-        <emu-table id="table-1" caption="Well-known Symbols"><figure><figcaption>Table 1: Well-known Symbols</figcaption>
-          <table>
-            <tbody>
-            <tr>
-              <th>
-                Specification Name
-              </th>
-              <th>
-                <var class="field">[[Description]]</var>
-              </th>
-              <th>
-                Value and Purpose
-              </th>
-            </tr>
-            <tr>
-              <td>
-                <ins>@@result</ins>
-              </td>
-              <td>
-                <ins><code>"Symbol.result"</code></ins>
-              </td>
-              <td>
-                <ins>A method that wraps function call result into a tuple array. Called by the semantics of <code>?=</code> operator and <code>ResultableStack</code> objects.</ins>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </figure></emu-table>
-      </emu-clause>
-    </emu-clause>
-    <emu-clause id="sec-object-type">
-      <h1><span class="secnum">1.1.2</span> The Object Type</h1>
-      <emu-clause id="sec-well-known-intrinsic-objects">
-        <h1><span class="secnum">1.1.2.1</span> Well-Known Intrinsic Objects</h1>
-        <emu-table id="table-well-known-intrinsic-objects" caption="Well-Known Intrinsic Objects" oldids="table-7"><figure><figcaption>Table 2: Well-Known Intrinsic Objects</figcaption><span id="table-7"></span>
-          <table>
-            <tbody><tr>
-              <th>
-                Intrinsic Name
-              </th>
-              <th>
-                Global Name
-              </th>
-              <th>
-                ECMAScript Language Association
-              </th>
-            </tr>
-            <tr>
-              <td>
-                <emu-xref href="#sec-function-constructor"><a href="https://tc39.es/ecma262/#sec-function-constructor">%Function%</a></emu-xref>
-              </td>
-              <td>
-                <code>Function</code>
-              </td>
-              <td>
-                The Function <emu-xref href="#constructor"><a href="https://tc39.es/ecma262/#constructor">constructor</a></emu-xref> (<emu-xref href="#sec-function-constructor"><a href="https://tc39.es/ecma262/#sec-function-constructor">20.2.1</a></emu-xref>)
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <emu-xref href="#sec-promise-constructor"><a href="https://tc39.es/ecma262/#sec-promise-constructor">%Promise%</a></emu-xref>
-              </td>
-              <td>
-                <code>Promise</code>
-              </td>
-              <td>
-                The Promise object (<emu-xref href="#sec-promise-objects"><a href="https://tc39.es/ecma262/#sec-promise-objects">27.2</a></emu-xref>)
-              </td>
-            </tr>
-          </tbody></table>
-        </figure></emu-table>
-      </emu-clause>
-    </emu-clause>
+  <emu-clause id="sec-comma-operator-runtime-semantics-evaluation" type="sdo">
+    <h1><span class="secnum">1.1</span> Runtime Semantics: Evaluation</h1>
+    <emu-grammar><emu-production name="TryExpression" collapsed="">
+    <emu-nt><a href="#prod-TryExpression">TryExpression</a></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="tddcjhkh" id="prod-PXeEcFj2">
+        <emu-t>try</emu-t>
+        <emu-nt id="_ref_11"><a href="#prod-AssignmentExpression">AssignmentExpression</a></emu-nt>
+    </emu-rhs>
+</emu-production>
+</emu-grammar>
+    <emu-alg><ol><li>Let <var>A</var> be <emu-xref aoid="Completion"><a href="https://tc39.es/ecma262/#sec-completion-ao">Completion</a></emu-xref>(<emu-xref aoid="Evaluation"><a href="https://tc39.es/ecma262/#sec-evaluation">Evaluation</a></emu-xref> of <emu-nt><a href="https://tc39.es/ecma262/#prod-Expression">Expression</a></emu-nt>).</li><li>If <var>A</var> is an <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">abrupt completion</a></emu-xref>, return ?&nbsp;<emu-xref aoid="TryExpressionResult" id="_ref_1"><a href="#sec-try-expression-result">TryExpressionResult</a></emu-xref>(<var>A</var>).</li><li>Let <var>B</var> be <emu-xref aoid="Completion"><a href="https://tc39.es/ecma262/#sec-completion-ao">Completion</a></emu-xref>(<emu-xref aoid="GetValue"><a href="https://tc39.es/ecma262/#sec-getvalue">GetValue</a></emu-xref>(<var>A</var>)).</li><li>Return ?&nbsp;<emu-xref aoid="TryExpressionResult" id="_ref_2"><a href="#sec-try-expression-result">TryExpressionResult</a></emu-xref>(<var>B</var>).</li></ol></emu-alg>
+    <emu-note><span class="note">Note</span><div class="note-contents">
+      <p><emu-xref aoid="GetValue"><a href="https://tc39.es/ecma262/#sec-getvalue">GetValue</a></emu-xref> must be called even though its value is not used because it may have observable side-effects.</p>
+    </div></emu-note>
   </emu-clause>
+
+  <emu-clause id="sec-try-expression-result" type="abstract operation" aoid="TryExpressionResult">
+    <h1><span class="secnum">1.2</span> TryExpressionResult ( <var>result</var> )</h1>
+    <p>The abstract operation TryExpressionResult takes argument <var>result</var> (a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">Completion Record</a></emu-xref>) and returns either a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">normal completion containing</a></emu-xref> a <emu-xref href="#sec-try-result-constructor" id="_ref_3"><a href="#sec-try-result-constructor">TryResult</a></emu-xref> or an <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">abrupt completion</a></emu-xref>. It performs the following steps when called:</p>
+    <emu-alg><ol><li>If <var>result</var> is a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">normal completion</a></emu-xref>, return <emu-xref aoid="TryResult.ok" id="_ref_4"><a href="#sec-try-expression-result-ok">TryResult.ok</a></emu-xref>(<var>result</var>.<var class="field">[[VALUE]]</var>).</li><li>If <var>result</var> is a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">throw completion</a></emu-xref>, return <emu-xref aoid="TryResult.error" id="_ref_5"><a href="#sec-try-expression-result-error">TryResult.error</a></emu-xref>(<var>result</var>.<var class="field">[[VALUE]]</var>).</li><li>Return ?&nbsp;<var>result</var>.</li></ol></emu-alg>
+  </emu-clause>
+  <emu-clause id="sec-try-expression-result-ok" type="abstract operation" aoid="TryResult.ok">
+    <h1><span class="secnum">1.3</span> TryResult.ok ( <var>value</var> )</h1>
+    <p>The abstract operation TryResult.ok takes argument <var>value</var> (an <emu-xref href="#sec-ecmascript-language-types"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types">ECMAScript language value</a></emu-xref>) and returns a <emu-xref href="#sec-try-result-constructor" id="_ref_6"><a href="#sec-try-result-constructor">TryResult</a></emu-xref>. It is the abstract equivelant of calling <code>TryResult.ok(value)</code></p>
+  </emu-clause>
+  <emu-clause id="sec-try-expression-result-error" type="abstract operation" aoid="TryResult.error">
+    <h1><span class="secnum">1.4</span> TryResult.error ( <var>value</var> )</h1>
+    <p>The abstract operation TryResult.error takes argument <var>value</var> (an <emu-xref href="#sec-ecmascript-language-types"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types">ECMAScript language value</a></emu-xref>) and returns a <emu-xref href="#sec-try-result-constructor" id="_ref_7"><a href="#sec-try-result-constructor">TryResult</a></emu-xref>. It is the abstract equivelant of calling <code>TryResult.error(value)</code></p>
+  </emu-clause>
+</emu-clause>
+
+<emu-clause id="sec-well-known-intrinsic-objects">
+  <h1><span class="secnum">2</span> Well-Known Intrinsic Objects</h1>
+  <emu-table id="table-well-known-intrinsic-objects" caption="Well-Known Intrinsic Objects" oldids="table-7"><figure><figcaption>Table 1: Well-Known Intrinsic Objects</figcaption><span id="table-7"></span>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Intrinsic Name
+          </th>
+          <th>
+            Global Name
+          </th>
+          <th>
+            ECMAScript Language Association
+          </th>
+        </tr>
+      </thead>
+      <tbody><tr>
+        <td>
+          <emu-xref href="#sec-try-result-constructor" id="_ref_8"><a href="#sec-try-result-constructor">%TryResult%</a></emu-xref>
+        </td>
+        <td>
+          <code>TryResult</code>
+        </td>
+        <td>
+          The <code>TryResult</code> <emu-xref href="#constructor"><a href="https://tc39.es/ecma262/#constructor">constructor</a></emu-xref> (<emu-xref href="#sec-try-result-constructor" id="_ref_0"><a href="#sec-try-result-constructor">3</a></emu-xref>)
+        </td>
+      </tr>
+    </tbody></table>
+  </figure></emu-table>
+</emu-clause>
+
+<emu-clause id="sec-try-result-constructor">
+  <h1><span class="secnum">3</span> The TryResult Constructor</h1>
+  <p>The TryResult <emu-xref href="#constructor"><a href="https://tc39.es/ecma262/#constructor">constructor</a></emu-xref>:</p>
+  <ul>
+    <li>is <dfn variants="TryResult" tabindex="-1">%TryResult%</dfn>.</li>
+    <li>is the initial value of the <emu-val>"TryResult"</emu-val> property of the <emu-xref href="#sec-global-object"><a href="https://tc39.es/ecma262/#sec-global-object">global object</a></emu-xref>.</li>
+    <li>is the functional equivelant of the following code:
+      <pre><code class="javascript hljs"><span class="hljs-keyword">class</span> <span class="hljs-title class_">TryResult</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">ok, error, value</span>) {
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">ok</span> = ok
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">error</span> = error
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">value</span> = value
+  }
+  *[<span class="hljs-title class_">Symbol</span>.<span class="hljs-property">iterator</span>]() {
+    <span class="hljs-keyword">yield</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">ok</span>
+    <span class="hljs-keyword">yield</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">error</span>
+    <span class="hljs-keyword">yield</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">value</span>
+  }
+  <span class="hljs-keyword">static</span> <span class="hljs-title function_">ok</span>(<span class="hljs-params">value</span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">TryResult</span>(<span class="hljs-literal">true</span>, <span class="hljs-literal">undefined</span>, value)
+  }
+  <span class="hljs-keyword">static</span> <span class="hljs-title function_">error</span>(<span class="hljs-params">error</span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">TryResult</span>(<span class="hljs-literal">false</span>, error, <span class="hljs-literal">undefined</span>)
+  }
+}</code></pre>
+    </li>
+  </ul>
 </emu-clause><emu-annex id="sec-copyright-and-software-license">
       <h1><span class="secnum">A</span> Copyright &amp; Software License</h1>
       
       <h2>Copyright Notice</h2>
-      <p>© 2025 Arthur Fiorette</p>
+      <p>© 2025 Arthur Fiorette, Arlen Beiler</p>
 
       <h2>Software License</h2>
       <p>All Software contained in this document ("Software") is protected by copyright and is being made available under the "BSD License", included below. This Software may be subject to third party rights (rights from parties other than Ecma International), including patent rights, and no licenses under such third party rights are granted under this license even if the third party concerned is a member of Ecma International. SEE THE ECMA CODE OF CONDUCT IN PATENT MATTERS AVAILABLE AT <a href="https://ecma-international.org/memento/codeofconduct.htm">https://ecma-international.org/memento/codeofconduct.htm</a> FOR INFORMATION REGARDING THE LICENSING OF PATENT CLAIMS THAT ARE REQUIRED TO IMPLEMENT ECMA INTERNATIONAL STANDARDS.</p>
@@ -3398,4 +3427,5 @@ emu-intro {
 
 <p>THIS SOFTWARE IS PROVIDED BY THE ECMA INTERNATIONAL "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ECMA INTERNATIONAL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 
-    </emu-annex></div></body>
+    </emu-annex>
+</div></body>
