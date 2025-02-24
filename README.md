@@ -23,7 +23,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Caller's Approach](#callers-approach)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
-  - [Strict Type Enforcement for Errors](#strict-type-enforcement-for-errors)
+  - [Type-Safe Errors](#type-safe-errors)
   - [Automatic Error Handling](#automatic-error-handling)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
@@ -169,11 +169,15 @@ Breaking compatibility is unacceptable for platforms like Node.js or libraries. 
 
 ## What This Proposal Does Not Aim to Solve
 
-### Strict Type Enforcement for Errors
+### Type-Safe Errors
 
-The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor proposes any kind safety on error handling.
+The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor proposes any kind safety around error handling.
 
-For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _(This also means no generic error type for the proposed [Result](#result-class) class)_
+- No generic error type for the proposed [Result](#result-class) class will be added.
+- No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
+- No ways to annotate a callable to specify the error type it throws will be added.
+
+For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _()_
 
 ### Automatic Error Handling
 
