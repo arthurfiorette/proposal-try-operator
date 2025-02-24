@@ -21,6 +21,8 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 <br />
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
+- [Status](#status)
+- [Authors](#authors)
 - [Caller's Approach](#callers-approach)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
   - [Type-Safe Errors](#type-safe-errors)
@@ -42,7 +44,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [Why a Proposal?](#why-a-proposal)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
-- [Authors](#authors)
 - [Inspiration](#inspiration)
 - [License](#license)
 
@@ -126,6 +127,22 @@ async function handle(request, reply) {
 ```
 
 A `try` statement provides significant flexibility and arguably results in more readable code. A `try` statement is a statement that can be used wherever a statement is expected, allowing for concise and readable error handling.
+
+<br />
+
+## Status
+
+**Stage:** 0 \
+**Champion:** _Actively looking for one_
+
+_For more information see the [TC39 proposal process](https://tc39.es/process-document/)._
+
+<br />
+
+## Authors
+
+- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
+- [Arlen Beiler](https://github.com/Arlen22)
 
 <br />
 
@@ -497,13 +514,6 @@ By providing such basic conveniences natively, we:
 This proposal is in its early stages, and we welcome your input to help refine it. Please feel free to open an issue or submit a pull request with your suggestions.
 
 **_Any contribution is welcome!_**
-
-<br />
-
-## Authors
-
-- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
-- [Arlen Beiler](https://github.com/Arlen22)
 
 <br />
 
