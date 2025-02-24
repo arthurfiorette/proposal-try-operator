@@ -3,7 +3,7 @@
 <h1>ECMAScript Try Operator</h1>
 
 > [!WARNING]  
-> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Operator`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-operator/tree/proposal-safe-assignment-operator)._
+> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Operator`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-operator/tree/old/proposal-safe-assignment-operator)._
 
 <br />
 
@@ -21,7 +21,10 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 <br />
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
+- [Caller's Approach](#callers-approach)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
+  - [Type-Safe Errors](#type-safe-errors)
+  - [Automatic Error Handling](#automatic-error-handling)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
   - [Can be inlined.](#can-be-inlined)
@@ -31,10 +34,12 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Never throws](#never-throws)
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Void Operations](#void-operations)
-- [Result class](#result-class)
+- [Result Class](#result-class)
+  - [Instance Structure](#instance-structure)
+  - [Iterable](#iterable)
+  - [Manual Creation](#manual-creation)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
-- [Caller's Approach](#callers-approach)
 - [Why a Proposal?](#why-a-proposal)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Authors](#authors)
@@ -124,11 +129,59 @@ A `try` statement provide significant flexibility and arguably result in more re
 
 <br />
 
+## Caller's Approach
+
+JavaScript has evolved over decades, with countless libraries and codebases built on top of one another. Any new feature that does not consider compatibility with existing code risks negatively impacting its adoption, as refactoring functional, legacy code simply to accommodate a new feature is often an unjustifiable cost.
+
+With that in mind, improvements in error handling can be approached in two ways:
+
+1. **At the caller's level**:
+
+   ```js
+   try {
+     const result = work()
+   } catch (error) {
+     console.error(error)
+   }
+   ```
+
+2. **At the callee's level**:
+
+   ```js
+   function work() {
+     // Performs some operation
+
+     if (error) {
+       return { status: "error", error }
+     } else {
+       return { status: "ok", data }
+     }
+   }
+   ```
+
+Both approaches achieve the same goal, but the second one requires refactoring all implementations into a new format. This is how languages like Go and Rust handle errors, returning a tuple of an error and a value or a `Result` object, respectively. While the callee-based approach can arguably be better, it succeeded in those languages because it was adopted from the very beginning, rather than introduced as a later addition.
+
+This proposal accounts for this by moving the transformation of errors into values to the **caller** level, preserving the familiar semantics and placement of `try/catch`. This approach ensures backward compatibility with existing code.
+
+Breaking compatibility is unacceptable for platforms like Node.js or libraries. Consequently, a callee-based approach would likely never be adopted for functions like `fetch` or `fs.readFile`, as it would disrupt existing codebases. Ironically, these are precisely the kinds of functions where improved error handling is most needed.
+
+<br />
+
 ## What This Proposal Does Not Aim to Solve
 
-1. **Strict Type Enforcement for Errors**: The `throw` statement in JavaScript can throw any type of value. This proposal does not impose type safety on error handling and will not introduce types into the language. For more information, see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _(This also means no generic error type for [Result](#result-class))_
+### Type-Safe Errors
 
-2. **Automatic Error Handling**: While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
+The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor proposes any kind safety around error handling.
+
+- No generic error type for the proposed [Result](#result-class) class will be added.
+- No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
+- No ways to annotate a callable to specify the error type it throws will be added.
+
+For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _()_
+
+### Automatic Error Handling
+
+While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
 
 <br />
 
@@ -304,48 +357,51 @@ function work() {
 
 <br />
 
-## Result class
+## Result Class
 
 > Please see [`polyfill.d.ts`](./polyfill.d.ts) and [`polyfill.js`](./polyfill.js) for a basic implementation of the `Result` class.
 
 The `Result` class represents the form of the value returned by the `try` operator.
 
-1. **Structure of a `Result` Instance**  
-   A `Result` instance contains three properties:
+### Instance Structure
 
-   - **`ok`**: A boolean indicating whether the expression executed successfully.
-   - **`error`**: The error thrown during execution, or `undefined` if no error occurred.
-   - **`value`**: The data returned from the execution, or `undefined` if an error occurred.
+A `Result` instance contains three properties:
 
-   Example usage:
+- **`ok`**: A boolean indicating whether the expression executed successfully.
+- **`error`**: The error thrown during execution, or `undefined` if no error occurred.
+- **`value`**: The data returned from the execution, or `undefined` if an error occurred.
 
-   ```js
-   const result = try something()
+Example usage:
 
-   if (result.ok) {
-     console.log(result.value)
-   } else {
-     console.error(result.error)
-   }
-   ```
+```js
+const result = try something()
 
-2. **Iterable Behavior**  
-   A `Result` instance is iterable, enabling destructuring and different variable names:
+if (result.ok) {
+  console.log(result.value)
+} else {
+  console.error(result.error)
+}
+```
 
-   ```js
-   const [success, validationError, user] = try User.parse(myJson)
-   ```
+### Iterable
 
-3. **Manual Creation of a `Result`**  
-   You can also create a `Result` instance manually using its constructor or static methods:
+A `Result` instance is iterable, enabling destructuring and different variable names:
 
-   ```js
-   // Creating a successful result
-   const result = Result.ok(value)
+```js
+const [success, validationError, user] = try User.parse(myJson)
+```
 
-   // Creating an error result
-   const result = Result.error(error)
-   ```
+### Manual Creation
+
+You can also create a `Result` instance manually using its constructor or static methods:
+
+```js
+// Creating a successful result
+const result = Result.ok(value)
+
+// Creating an error result
+const result = Result.error(error)
+```
 
 <br />
 
@@ -418,44 +474,6 @@ There is no guarantee that `createException` always returns an exception. Someon
 Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
 
 For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-operator/issues/30).
-
-<br />
-
-## Caller's Approach
-
-JavaScript has evolved over decades, with countless libraries and codebases built on top of one another. Any new feature that does not consider compatibility with existing code risks negatively impacting its adoption, as refactoring functional, legacy code simply to accommodate a new feature is often an unjustifiable cost.
-
-With that in mind, improvements in error handling can be approached in two ways:
-
-1. **At the caller's level**:
-
-   ```js
-   try {
-     const result = work()
-   } catch (error) {
-     console.error(error)
-   }
-   ```
-
-2. **At the callee's level**:
-
-   ```js
-   function work() {
-     // Performs some operation
-
-     if (error) {
-       return { status: "error", error }
-     } else {
-       return { status: "ok", data }
-     }
-   }
-   ```
-
-Both approaches achieve the same goal, but the second one requires refactoring all implementations into a new format. This is how languages like Go and Rust handle errors, returning a tuple of an error and a value or a `Result` object, respectively. While the callee-based approach can arguably be better, it succeeded in those languages because it was adopted from the very beginning, rather than introduced as a later addition.
-
-This proposal accounts for this by moving the transformation of errors into values to the **caller** level, preserving the familiar semantics and placement of `try/catch`. This approach ensures backward compatibility with existing code.
-
-Breaking compatibility is unacceptable for platforms like Node.js or libraries. Consequently, a callee-based approach would likely never be adopted for functions like `fetch` or `fs.readFile`, as it would disrupt existing codebases. Ironically, these are precisely the kinds of functions where improved error handling is most needed.
 
 <br />
 
