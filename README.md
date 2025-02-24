@@ -13,7 +13,7 @@
 
 <br />
 
-This proposal aims to address the ergonomic challenges of managing multiple, often nested, `try/catch` blocks that are necessary for handling operations that may fail at various points.
+This proposal addresses the ergonomic challenges of managing multiple, often nested, `try/catch` blocks necessary for handling operations that may fail at various points.
 
 Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
@@ -21,6 +21,8 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 <br />
 
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
+- [Status](#status)
+- [Authors](#authors)
 - [Caller's Approach](#callers-approach)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
   - [Type-Safe Errors](#type-safe-errors)
@@ -42,7 +44,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [Why a Proposal?](#why-a-proposal)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
-- [Authors](#authors)
 - [Inspiration](#inspiration)
 - [License](#license)
 
@@ -125,7 +126,23 @@ async function handle(request, reply) {
 }
 ```
 
-A `try` statement provide significant flexibility and arguably result in more readable code. A `try` statement is a statement that can be used wherever a statement is expected, allowing for concise and readable error handling.
+A `try` statement provides significant flexibility and arguably results in more readable code. A `try` statement is a statement that can be used wherever a statement is expected, allowing for concise and readable error handling.
+
+<br />
+
+## Status
+
+**Stage:** 0 \
+**Champion:** _Actively looking for one_
+
+_For more information see the [TC39 proposal process](https://tc39.es/process-document/)._
+
+<br />
+
+## Authors
+
+- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
+- [Arlen Beiler](https://github.com/Arlen22)
 
 <br />
 
@@ -139,7 +156,7 @@ With that in mind, improvements in error handling can be approached in two ways:
 
    ```js
    try {
-     const result = work()
+     const value = work()
    } catch (error) {
      console.error(error)
    }
@@ -149,12 +166,12 @@ With that in mind, improvements in error handling can be approached in two ways:
 
    ```js
    function work() {
-     // Performs some operation
+     try {
+       // Performs some operation
 
-     if (error) {
-       return { status: "error", error }
-     } else {
-       return { status: "ok", data }
+       return { ok: true, value }
+     } catch (error) {
+       return { ok: false, error }
      }
    }
    ```
@@ -173,11 +190,11 @@ Ironically, these are precisely the kinds of functions where improved error hand
 
 ### Type-Safe Errors
 
-The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor proposes any kind safety around error handling.
+The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor propose any kind of safety around error handling.
 
 - No generic error type for the proposed [Result](#result-class) class will be added.
 - No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
-- No ways to annotate a callable to specify the error type it throws will be added.
+- No way to annotate a callable to specify the error type it throws will be added.
 
 For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _()_
 
@@ -232,7 +249,7 @@ const result = _result
 
 ### Can be inlined.
 
-Similar to `void`, `typeof`, `yield` and `new`:
+Similar to `void`, `typeof`, `yield`, and `new`:
 
 ```js
 array.map((fn) => try fn()).filter((result) => result.ok) // works :)
@@ -334,7 +351,7 @@ A detailed discussion about this topic is available at [GitHub Issue #55](https:
 
 ### Void Operations
 
-In scenarios where the successful result of a operation is not needed, it can be safely ignored:
+In scenarios where the successful result of an operation is not needed, it can be safely ignored:
 
 ```js
 function work() {
@@ -369,7 +386,7 @@ The `Result` class represents the form of the value returned by the `try` operat
 
 A `Result` instance contains three properties:
 
-- **`ok`**: A boolean indicating whether the expression executed successfully.
+- **`ok`**: A boolean indicating whether the expression was executed successfully.
 - **`error`**: The error thrown during execution, or `undefined` if no error occurred.
 - **`value`**: The data returned from the execution, or `undefined` if an error occurred.
 
@@ -497,13 +514,6 @@ By providing such basic conveniences natively, we:
 This proposal is in its early stages, and we welcome your input to help refine it. Please feel free to open an issue or submit a pull request with your suggestions.
 
 **_Any contribution is welcome!_**
-
-<br />
-
-## Authors
-
-- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
-- [Arlen Beiler](https://github.com/Arlen22)
 
 <br />
 
