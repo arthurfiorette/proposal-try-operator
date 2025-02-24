@@ -3,7 +3,7 @@
 <h1>ECMAScript Try Operator</h1>
 
 > [!WARNING]  
-> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Operator`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-operator/tree/proposal-safe-assignment-operator)._
+> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Operator`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-operator/tree/old/proposal-safe-assignment-operator)._
 
 <br />
 
