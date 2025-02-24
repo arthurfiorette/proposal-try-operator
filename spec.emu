@@ -39,36 +39,36 @@ contributors: Arthur Fiorette, Arlen Beiler
     <h1>
       TryExpressionResult (
         _result_: a Completion Record,
-      ): either a normal completion containing a TryResult or an abrupt completion
+      ): either a normal completion containing a Result or an abrupt completion
     </h1>
     <dl class="header">
     </dl>
     <emu-alg>
-      1. If _result_ is a normal completion, return TryResult.ok(_result_.[[VALUE]]).
-      1. If _result_ is a throw completion, return TryResult.error(_result_.[[VALUE]]).
+      1. If _result_ is a normal completion, return Result.ok(_result_.[[VALUE]]).
+      1. If _result_ is a throw completion, return Result.error(_result_.[[VALUE]]).
       1. Return ? _result_.
     </emu-alg>
   </emu-clause>
   <emu-clause id="sec-try-expression-result-ok" type="abstract operation">
     <h1>
-      TryResult.ok (
+      Result.ok (
         _value_: an ECMAScript language value,
-      ): a TryResult
+      ): a Result
     </h1>
     <dl class="header">
       <dt>description</dt>
-      <dd>It is the abstract equivelant of calling `TryResult.ok(value)`</dd>
+      <dd>It is the abstract equivelant of calling `Result.ok(value)`</dd>
     </dl>
   </emu-clause>
   <emu-clause id="sec-try-expression-result-error" type="abstract operation">
     <h1>
-      TryResult.error (
+      Result.error (
         _value_: an ECMAScript language value,
-      ): a TryResult
+      ): a Result
     </h1>
     <dl class="header">
       <dt>description</dt>
-      <dd>It is the abstract equivelant of calling `TryResult.error(value)`</dd>
+      <dd>It is the abstract equivelant of calling `Result.error(value)`</dd>
     </dl>
   </emu-clause>
 </emu-clause>
@@ -92,28 +92,28 @@ contributors: Arthur Fiorette, Arlen Beiler
       </thead>
       <tr>
         <td>
-          %TryResult%
+          %Result%
         </td>
         <td>
-          `TryResult`
+          `Result`
         </td>
         <td>
-          The `TryResult` constructor (<emu-xref href="#sec-try-result-constructor"></emu-xref>)
+          The `Result` constructor (<emu-xref href="#sec-result-constructor"></emu-xref>)
         </td>
       </tr>
     </table>
   </emu-table>
 </emu-clause>
 
-<emu-clause id="sec-try-result-constructor">
-  <h1>The TryResult Constructor</h1>
-  <p>The TryResult constructor:</p>
+<emu-clause id="sec-result-constructor">
+  <h1>The Result Constructor</h1>
+  <p>The Result constructor:</p>
   <ul>
-    <li>is <dfn variants="TryResult">%TryResult%</dfn>.</li>
-    <li>is the initial value of the *"TryResult"* property of the global object.</li>
+    <li>is <dfn variants="Result">%Result%</dfn>.</li>
+    <li>is the initial value of the *"Result"* property of the global object.</li>
     <li>is the functional equivelant of the following code:
       <pre><code class="javascript">
-        class TryResult {
+        class Result {
           constructor(ok, error, value) {
             this.ok = ok
             this.error = error
@@ -125,10 +125,10 @@ contributors: Arthur Fiorette, Arlen Beiler
             yield this.value
           }
           static ok(value) {
-            return new TryResult(true, undefined, value)
+            return new Result(true, undefined, value)
           }
           static error(error) {
-            return new TryResult(false, error, undefined)
+            return new Result(false, error, undefined)
           }
         }
       </code></pre>

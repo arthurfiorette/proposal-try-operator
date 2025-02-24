@@ -139,7 +139,7 @@ With that in mind, improvements in error handling can be approached in two ways:
 
    ```js
    try {
-     const result = work()
+     const value = work()
    } catch (error) {
      console.error(error)
    }
@@ -149,12 +149,12 @@ With that in mind, improvements in error handling can be approached in two ways:
 
    ```js
    function work() {
-     // Performs some operation
+     try {
+       // Performs some operation
 
-     if (error) {
-       return { status: "error", error }
-     } else {
-       return { status: "ok", data }
+       return { ok: true, value }
+     } catch (error) {
+       return { ok: false, error }
      }
    }
    ```
