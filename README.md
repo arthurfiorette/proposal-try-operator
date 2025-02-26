@@ -210,7 +210,7 @@ This proposal accounts for this by moving the transformation of errors into valu
 
 Breaking compatibility is unacceptable for platforms like Node.js or libraries. Consequently, a callee-based approach would likely never be adopted for functions like `fetch` or `fs.readFile`, as it would disrupt existing codebases.
 
-Ironically, these are precisely the kinds of functions where improved error handling is most needed.
+Ironically, **these are precisely the kinds of functions where improved error handling is most needed**.
 
 <br />
 
