@@ -17,9 +17,6 @@ This proposal addresses the ergonomic challenges of managing multiple, often nes
 
 Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
-<hr />
-<br />
-
 <details>
 
 <summary>
@@ -54,8 +51,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [License](#license)
 
 </details>
-
-<br />
 
 ## Status
 
