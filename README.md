@@ -139,8 +139,9 @@ function getPostInfo(session, postId, cache, db) {
 
   // Requires a dedicated error handler
   if (!userOk) {
-    otel.capture(userErr, Operations.GET_SELF)
     session.logout()
+
+    otel.capture(userErr, Operations.GET_SELF)
     throw new Error("Invalid session")
   }
 
