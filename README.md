@@ -20,9 +20,9 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 <hr />
 <br />
 
-- [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Status](#status)
 - [Authors](#authors)
+- [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Caller's Approach](#callers-approach)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
   - [Type-Safe Errors](#type-safe-errors)
@@ -49,6 +49,21 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 
 <br />
 
+## Status
+
+**Stage:** 0 \
+**Champion:** _Actively looking for one_
+
+_For more information see the [TC39 proposal process](https://tc39.es/process-document/)._
+
+<br />
+
+## Authors
+
+- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
+- [Arlen Beiler](https://github.com/Arlen22)
+
+<br />
 ## Try/Catch Is Not Enough
 
 <!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 :) -->
@@ -152,22 +167,6 @@ This approach improves readability by cleanly separating the happy path from err
 Control flow remains linear, making it easier to follow, while only the "exceptions" in execution require explicit scoping.
 
 The result is a more structured, maintainable function where failures are handled concisely without unnecessary indentation.
-
-<br />
-
-## Status
-
-**Stage:** 0 \
-**Champion:** _Actively looking for one_
-
-_For more information see the [TC39 proposal process](https://tc39.es/process-document/)._
-
-<br />
-
-## Authors
-
-- [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
-- [Arlen Beiler](https://github.com/Arlen22)
 
 <br />
 
