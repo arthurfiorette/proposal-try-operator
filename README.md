@@ -59,7 +59,7 @@ On the other hand, the `catch {}` block **is** genuine control flow, making its 
 
 > a person or thing that is excluded from a general statement or does not follow a rule.
 
-Since `catch` is explicitly handling exceptions, it makes sense to encapsulate exception-handling logic in a block that separates it. Following the same line of thought, there is no logical reason to also encapsulate the non-exceptional flow in a block.
+Since catch explicitly handles exceptions, encapsulating exception-handling logic in a dedicated block makes sense. Following the same reasoning, there is no justification for also enclosing the non-exceptional flow in a block.
 
 Consider a simple function like this:
 
