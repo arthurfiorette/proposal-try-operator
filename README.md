@@ -59,9 +59,7 @@ On the other hand, the `catch {}` block **is** genuine control flow, making its 
 
 > a person or thing that is excluded from a general statement or does not follow a rule.
 
-Since `catch` is explicitly handling exceptions, it makes sense to encapsulate exception-handling logic in a block that separates it from the normal program flow.
-
-<br />
+Since `catch` is explicitly handling exceptions, it makes sense to encapsulate exception-handling logic in a block that separates it. Following the same line of thought, there is no logical reason to also encapsulate the non-exceptional flow in a block.
 
 Consider a simple function like this:
 
@@ -75,8 +73,6 @@ function getPostInfo(session, postSlug, cache, db) {
   return { post, comments }
 }
 ```
-
-<br />
 
 But **production code is rarely this clean**. Error handling quickly forces a messier structure:
 
@@ -117,8 +113,6 @@ function getPostInfo(session, postSlug, cache, db) {
 The `try` blocks didn't provide much value beyond introducing unnecessary nesting.
 
 Instead, using the proposed `try` operator simplifies the function:
-
-<br />
 
 ```js
 function getPostInfo(session, postId, cache, db) {
