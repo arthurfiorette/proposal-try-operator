@@ -152,10 +152,7 @@ function getPostInfo(session, postId, cache, db) {
     throw new Error("Could not get post")
   }
 
-  const [commentsOk, commentsErr, comments = []] = try db.selectComments(
-    post.id,
-    user
-  )
+  const [commentsOk, commentsErr, comments = []] = try db.selectComments(post.id, user)
 
   // The post must still be returned even if fetching comments fails
   if (!commentsOk) {
