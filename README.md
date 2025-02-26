@@ -64,6 +64,7 @@ _For more information see the [TC39 proposal process](https://tc39.es/process-do
 - [Arlen Beiler](https://github.com/Arlen22)
 
 <br />
+
 ## Try/Catch Is Not Enough
 
 <!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 :) -->
