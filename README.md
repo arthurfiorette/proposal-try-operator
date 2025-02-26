@@ -20,6 +20,12 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 <hr />
 <br />
 
+<details>
+
+<summary>
+  <h2>Table of Contents</h2>
+</summary>
+
 - [Status](#status)
 - [Authors](#authors)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
@@ -46,6 +52,8 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Inspiration](#inspiration)
 - [License](#license)
+
+</details>
 
 <br />
 
