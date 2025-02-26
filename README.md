@@ -224,7 +224,7 @@ The `throw` statement in JavaScript can throw any type of value. This proposal d
 - No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
 - No way to annotate a callable to specify the error type it throws will be added.
 
-For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _()_
+For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
 
 ### Automatic Error Handling
 
