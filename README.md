@@ -521,7 +521,7 @@ This proposal is in its early stages, and we welcome your input to help refine i
 
 - [This tweet from @LeaVerou](https://x.com/LeaVerou/status/1819381809773216099)
 - The frequent oversight of error handling in JavaScript code.
-- [Effect TS Error Management](https://effect.website/docs/guides/error-management)
+- [Effect TS Error Management](https://effect.website/docs/error-management/two-error-types/)
 - The [`tuple-it`](https://www.npmjs.com/package/tuple-it) npm package, which introduces a similar concept but modifies the `Promise` and `Function` prototypes—an approach that is less ideal.
 
 <br />
