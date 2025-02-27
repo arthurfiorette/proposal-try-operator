@@ -17,12 +17,15 @@ This proposal addresses the ergonomic challenges of managing multiple, often nes
 
 Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
-<hr />
-<br />
+<details>
 
-- [Try/Catch Is Not Enough](#trycatch-is-not-enough)
+<summary>
+  <h2>Table of Contents</h2>
+</summary>
+
 - [Status](#status)
 - [Authors](#authors)
+- [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Caller's Approach](#callers-approach)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
   - [Type-Safe Errors](#type-safe-errors)
@@ -47,88 +50,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Inspiration](#inspiration)
 - [License](#license)
 
-<br />
-
-## Try/Catch Is Not Enough
-
-<!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 :) -->
-
-The `try {}` block is often redundant, as its scoping lacks meaningful conceptual significance. It generally acts more as a code annotation than a genuine control flow construct. Unlike true control flow blocks, no program state exists that requires being confined to a `try {}` block.
-
-Conversely, the `catch {}` block **is** genuine control flow, making its scoping relevant and meaningful. According to Oxford Languages, an exception is defined as:
-
-> a person or thing that is excluded from a general statement or does not follow a rule.
-
-Since `catch` handles exceptions, it is logical to encapsulate exception-handling logic in a block to exclude it from the general program flow.
-
-The pseudocode below illustrates the lack of value in nesting the success path within a code block:
-
-```js
-async function handle(request, reply) {
-  try {
-    const userInfo = await cache.getUserInfo(request.id)
-
-    try {
-      const posts = await db.getPosts(userInfo.authorId)
-
-      let comments
-
-      // Variables used after error handling must be declared outside the block
-      try {
-        comments = await db.getComments(posts.map((post) => post.id))
-      } catch (error) {
-        logger.error(error, "Posts without comments not implemented yet")
-        return reply.status(500).send({ error: "Could not get comments" })
-      }
-
-      // Do something with comments before returning
-      return reply.send({ userInfo, posts, comments })
-    } catch (error) {
-      logger.error(error, "Anonymous user behavior not implemented yet")
-      return reply.status(500).send({ error: "Could not get posts" })
-    }
-  } catch (error) {
-    logger.error(error, "Maybe DB is down?")
-    return reply.status(500).send({ error: "Could not get user info" })
-  }
-}
-```
-
-With the proposed `try` statement, the same function can be rewritten as:
-
-```js
-async function handle(request, reply) {
-  const userInfo = try await cache.getUserInfo(request.id)
-
-  if (!userInfo.ok) {
-    logger.error(userInfo.error, "Maybe DB is down?")
-    return reply.status(500).send({ error: "Could not get user info" })
-  }
-
-  const posts = try await db.getPosts(userInfo.value.authorId)
-
-  if (!posts.ok) {
-    logger.error(posts.error, "Anonymous user behavior not implemented yet")
-    return reply.status(500).send({ error: "Could not get posts" })
-  }
-
-  const comments = try await db.getComments(posts.value.map((post) => post.id))
-
-  if (!comments.ok) {
-    logger.error(comments.error, "Posts without comments not implemented yet")
-    return reply.status(500).send({ error: "Could not get comments" })
-  }
-
-  // No need for reassignable variables or nested try/catch blocks
-
-  // Do something with comments before returning
-  return reply.send({ userInfo: userInfo.value, posts: posts.value, comments: comments.value })
-}
-```
-
-A `try` statement provides significant flexibility and arguably results in more readable code. A `try` statement is a statement that can be used wherever a statement is expected, allowing for concise and readable error handling.
-
-<br />
+</details>
 
 ## Status
 
@@ -143,6 +65,110 @@ _For more information see the [TC39 proposal process](https://tc39.es/process-do
 
 - [Arthur Fiorette](https://github.com/arthurfiorette) <sub>([X](https://x.com/arthurfiorette))</sub>
 - [Arlen Beiler](https://github.com/Arlen22)
+
+<br />
+
+## Try/Catch Is Not Enough
+
+<!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 :) -->
+
+The `try {}` block often feels redundant because its scoping lacks meaningful conceptual significance. Rather than serving as an essential control flow construct, it mostly acts as a code annotation. Unlike loops or conditionals, a `try {}` block doesn’t encapsulate any distinct program state that requires isolation.
+
+On the other hand, the `catch {}` block **is** genuine control flow, making its scoping relevant. According to Oxford Languages, an exception is defined as:
+
+> a person or thing that is excluded from a general statement or does not follow a rule.
+
+Since catch explicitly handles exceptions, encapsulating exception-handling logic in a dedicated block makes sense. Following the same reasoning, there is no justification for also enclosing the non-exceptional flow in a block.
+
+Consider a simple function like this:
+
+```js
+function getPostInfo(session, postSlug, cache, db) {
+  const user = cache.getUser(session.userId)
+
+  const post = db.selectPost(postSlug, user)
+  const comments = db.selectComments(post.id, user)
+
+  return { post, comments }
+}
+```
+
+But **production code is rarely this clean**. Error handling quickly forces a messier structure:
+
+```js
+function getPostInfo(session, postSlug, cache, db) {
+  let user
+
+  // Requires a dedicated error handler
+  try {
+    user = cache.getUser(session.userId)
+  } catch (error) {
+    otel.capture(error, Operations.GET_SELF)
+    session.logout()
+    throw new Error("Invalid session")
+  }
+
+  // No recovery if selectPost fails
+  try {
+    const post = db.selectPost(postSlug, user)
+
+    let comments = []
+
+    // The post must still be returned even if fetching comments fails
+    try {
+      comments = db.selectComments(post.id, user)
+    } catch (error) {
+      otel.capture(error, Operations.JOIN_POST_COMMENTS)
+    }
+  } catch (error) {
+    otel.capture(error, Operations.GET_POST)
+    throw new Error("Could not get post")
+  }
+
+  return { post, comments }
+}
+```
+
+The `try` blocks didn't provide much value beyond introducing unnecessary nesting.
+
+Instead, using the proposed `try` operator simplifies the function:
+
+```js
+function getPostInfo(session, postId, cache, db) {
+  const [userOk, userErr, user] = try cache.getUser(session.userId)
+
+  // Requires a dedicated error handler
+  if (!userOk) {
+    session.logout()
+
+    otel.capture(userErr, Operations.GET_SELF)
+    throw new Error("Invalid session")
+  }
+
+  const [postOk, postErr, post] = try db.selectPost(postId, user)
+
+  // No recovery if selectPost fails
+  if (!postOk) {
+    otel.capture(postErr, Operations.GET_POST)
+    throw new Error("Could not get post")
+  }
+
+  const [commentsOk, commentsErr, comments = []] = try db.selectComments(post.id, user)
+
+  // The post must still be returned even if fetching comments fails
+  if (!commentsOk) {
+    otel.capture(commentsErr, Operations.JOIN_POST_COMMENTS)
+  }
+
+  return { post, comments }
+}
+```
+
+This approach improves readability by cleanly separating the happy path from error handling.
+
+Control flow remains linear, making it easier to follow, while only the "exceptions" in execution require explicit scoping.
+
+The result is a more structured, maintainable function where failures are handled concisely without unnecessary indentation.
 
 <br />
 
@@ -182,7 +208,7 @@ This proposal accounts for this by moving the transformation of errors into valu
 
 Breaking compatibility is unacceptable for platforms like Node.js or libraries. Consequently, a callee-based approach would likely never be adopted for functions like `fetch` or `fs.readFile`, as it would disrupt existing codebases.
 
-Ironically, these are precisely the kinds of functions where improved error handling is most needed.
+Ironically, **these are precisely the kinds of functions where improved error handling is most needed**.
 
 <br />
 
@@ -196,7 +222,7 @@ The `throw` statement in JavaScript can throw any type of value. This proposal d
 - No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
 - No way to annotate a callable to specify the error type it throws will be added.
 
-For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219). _()_
+For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
 
 ### Automatic Error Handling
 
