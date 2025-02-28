@@ -21,4 +21,22 @@ class Result {
   static error(error) {
     return new Result(false, error, undefined)
   }
+
+  static try(fnOrPromise, ...args) {
+    if (fnOrPromise instanceof Promise) {
+      return fnOrPromise.then(Result.ok, Result.error)
+    }
+
+    try {
+      const result = fnOrPromise.apply(undefined, args)
+
+      if (result instanceof Promise) {
+        return result.then(Result.ok, Result.error)
+      }
+
+      return Result.ok(result)
+    } catch (error) {
+      return Result.error(error)
+    }
+  }
 }

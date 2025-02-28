@@ -56,12 +56,38 @@ interface ResultConstructor {
   /**
    * Creates a result for a successful operation
    */
-  ok<V>(value: V): Result<V>
+  ok<V>(this: void, value: V): Result<V>
 
   /**
    * Creates a result for a failed operation
    */
-  error<V>(error: unknown): Result<V>
+  error<V>(this: void, error: unknown): Result<V>
+
+  /**
+   * Runs a function and wraps the result into a {@linkcode Result}.
+   *
+   * @example
+   *
+   * const [ok, error, value] = Result.try(func, arg1, arg2)
+   * const [ok, error, value] = await Result.try(asyncFunc, arg1, arg2)
+   * const [ok, error, value] = await Result.try(async (arg) => arg, 'pass')
+   */
+  try<F extends (this: void, ...args: A[]) => R, A extends unknown[], R>(
+    this: void,
+    fn: F
+  ): R extends Promise<infer P> ? Promise<Result<P>> : Result<R>
+
+  /**
+   * Wraps a promise into a {@linkcode Result}.
+   *
+   * The resulting promise never rejects.
+   *
+   * @example
+   *
+   * const [ok, error, value] = await Result.try(Promise.resolve('pass'))
+   * const [ok, error, value] = await Result.try(new Promise((rej) => rej('hello')))
+   */
+  try<P extends Promise<R>, R>(this: void, promise: P): Promise<Result<R>>
 }
 
 declare const Result: ResultConstructor
