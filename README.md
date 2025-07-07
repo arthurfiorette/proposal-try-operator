@@ -5,7 +5,7 @@
 > [!TIP]  
 > You can test the runtime aspect of this proposal and its ergonomics today! Install our reference `Result` class implementation from NPM:
 >
-> `npm install try`.
+> `npm install try`
 
 <br />
 
@@ -29,9 +29,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Authors](#authors)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Caller's Approach](#callers-approach)
-- [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
-  - [Type-Safe Errors](#type-safe-errors)
-  - [Automatic Error Handling](#automatic-error-handling)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
   - [Can be inlined.](#can-be-inlined)
@@ -42,15 +39,18 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Void Operations](#void-operations)
 - [Result Class](#result-class)
+  - [Reference Implementation](#reference-implementation)
   - [Instance Structure](#instance-structure)
   - [Iterable Protocol](#iterable-protocol)
   - [Manual Creation](#manual-creation)
   - [No Result Flattening](#no-result-flattening)
-  - [Reference Implementation](#reference-implementation)
+- [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
+  - [Type-Safe Errors](#type-safe-errors)
+  - [Automatic Error Handling](#automatic-error-handling)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
+- [A Case for Syntax](#a-case-for-syntax)
 - [Why a Proposal?](#why-a-proposal)
-- [The Case for Syntax](#the-case-for-syntax)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Inspiration](#inspiration)
 - [License](#license)
@@ -214,24 +214,6 @@ This proposal accounts for this by moving the transformation of errors into valu
 Breaking compatibility is unacceptable for platforms like Node.js or libraries. Consequently, a callee-based approach would likely never be adopted for functions like `fetch` or `fs.readFile`, as it would disrupt existing codebases.
 
 Ironically, **these are precisely the kinds of functions where improved error handling is most needed**.
-
-<br />
-
-## What This Proposal Does Not Aim to Solve
-
-### Type-Safe Errors
-
-The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor propose any kind of safety around error handling.
-
-- No generic error type for the proposed [Result](#result-class) class will be added.
-- No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
-- No way to annotate a callable to specify the error type it throws will be added.
-
-For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
-
-### Automatic Error Handling
-
-While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
 
 <br />
 
@@ -411,6 +393,18 @@ function work() {
 
 The `try` operator evaluates an expression and returns an instance of the `Result` class, which encapsulates the outcome of the operation.
 
+### Reference Implementation
+
+To validate the ergonomics and utility of this proposal, a spec-compliant, runtime-only implementation of the `Result` class has been published to npm as the [`try`](https://www.npmjs.com/package/try) package. This package provides a `t()` function that serves as a polyfill for the `try` operator's runtime behavior, allowing developers to experiment with the core pattern.
+
+```js
+import { t } from "try"
+
+const [ok, err, val] = await t(fetch, "https://api.example.com")
+```
+
+You can check the published package at [npmjs.com/package/try](https://www.npmjs.com/package/try) or [github.com/arthurfiorette/try](https://github.com/arthurfiorette/try) and contribute to its development.
+
 ### Instance Structure
 
 A `Result` instance always contains a boolean `ok` property that indicates the outcome.
@@ -454,19 +448,23 @@ const failure = Result.error(new Error("Operation failed"))
 
 The `try` operator and `Result` constructors wrap the value they are given without inspection. If this value is itself a `Result` instance, it will be nested, not flattened. This ensures predictable and consistent behavior.
 
-### Reference Implementation
+<br />
 
-To validate the ergonomics and utility of this proposal, a spec-compliant, runtime-only implementation of the `Result` class has been published to npm as the [`try`](https://www.npmjs.com/package/try) package. This package provides a `t()` function that serves as a polyfill for the `try` operator's runtime behavior, allowing developers to experiment with the core pattern.
+## What This Proposal Does Not Aim to Solve
 
-```js
-import { t } from "try"
+### Type-Safe Errors
 
-const [ok, err, val] = await t(fetch, "https://api.example.com")
-```
+The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor propose any kind of safety around error handling.
 
-By using the `try` package, developers can adopt the `Result`-based error handling pattern in real-world applications. This allows the proposal to be tested against the ultimate measure of success: whether it proves genuinely useful and improves code quality over time, providing valuable feedback for the standardization process.
+- No generic error type for the proposed [Result](#result-class) class will be added.
+- No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
+- No way to annotate a callable to specify the error type it throws will be added.
 
-You can check the published package at [npmjs.com/package/try](https://www.npmjs.com/package/try) or [github.com/arthurfiorette/try](https://github.com/arthurfiorette/try) and contribute to its development.
+For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
+
+### Automatic Error Handling
+
+While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
 
 <br />
 
@@ -542,6 +540,16 @@ For a more in-depth explanation of this decision, refer to [GitHub Issue #30](ht
 
 <br />
 
+## A Case for Syntax
+
+This proposal intentionally combines the `try` operator with the `Result` class because one is incomplete without the other. A standard `Result` class is valuable on its own, as it would unify the countless `Result` and `Option` type implementations that currently fragment the ecosystem. Consistency is key, and a built-in type would establish a common pattern for all developers.
+
+It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
+
+Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
+
+<br />
+
 ## Why a Proposal?
 
 A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
@@ -552,16 +560,6 @@ By providing such basic conveniences natively, we:
 
 - Increase consistency across codebases (many NPM packages already implement variations of this proposal, each with its own API and lack of standardization).
 - Reduce code complexity, making it more readable and less error-prone.
-
-<br />
-
-## The Case for Syntax
-
-This proposal intentionally combines the `try` operator with the `Result` class because one is incomplete without the other. A standard `Result` class is valuable on its own, as it would unify the countless `Result` and `Option` type implementations that currently fragment the ecosystem. Consistency is key, and a built-in type would establish a common pattern for all developers.
-
-It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
-
-Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
 
 <br />
 
