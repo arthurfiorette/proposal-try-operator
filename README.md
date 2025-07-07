@@ -3,7 +3,9 @@
 <h1>ECMAScript Try Operator</h1>
 
 > [!TIP]  
-> You can test the runtime aspect of this proposal and its ergonomics today! Install our reference `Result` class implementation from NPM:<br/>`npm install try`.
+> You can test the runtime aspect of this proposal and its ergonomics today! Install our reference `Result` class implementation from NPM:
+> 
+> `npm install try`.
 
 <br />
 
