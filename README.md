@@ -21,8 +21,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 
 <br />
 
-<h2>Table of Contents</h2>
-
 - [Status](#status)
 - [Authors](#authors)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
