@@ -48,6 +48,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [Why a Proposal?](#why-a-proposal)
+- [The Case for Syntax](#the-case-for-syntax)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Inspiration](#inspiration)
 - [License](#license)
@@ -551,6 +552,14 @@ By providing such basic conveniences natively, we:
 
 - Increase consistency across codebases (many NPM packages already implement variations of this proposal, each with its own API and lack of standardization).
 - Reduce code complexity, making it more readable and less error-prone.
+
+<br />
+
+## The Case for Syntax
+
+This proposal intentionally combines the `try` operator with the `Result` class because one is incomplete without the other. A standard `Result` class is valuable on its own, as it would unify the countless `Result` and `Option` type implementations that currently fragment the ecosystem. Consistency is key, and a built-in type would establish a common pattern for all developers.
+
+However, the true ergonomic leap comes from the `try` operator. It eliminates the verbose `() => ...` function wrapper required by any library-only solution, which is the primary source of friction. Advancing a runtime-only proposal would be counter-intuitive; it would standardize a pattern but omit the syntax that makes it truly seamless to use. The operator provides the clean syntax, and the class provides the consistent result. They should be considered together.
 
 <br />
 
