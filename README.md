@@ -39,6 +39,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Instance Structure](#instance-structure)
   - [Iterable Protocol](#iterable-protocol)
   - [Manual Creation](#manual-creation)
+  - [`try()` static method](#try-static-method)
   - [No Result Flattening](#no-result-flattening)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
   - [Type-Safe Errors](#type-safe-errors)
@@ -439,6 +440,12 @@ const success = Result.ok(42)
 // Create a failure result
 const failure = Result.error(new Error("Operation failed"))
 ```
+
+### `try()` static method
+
+It also includes a static `Result.try()` method, which serves as the runtime foundation for the `try` operator. This method wraps a function call, catching any synchronous exceptions or asynchronous rejections and returning a `Result` or `Promise<Result>`, respectively.
+
+The proposed `try expression` syntax is essentially an ergonomic improvement over the more verbose `Result.try(() => expression)`, removing the need for a function wrapper.
 
 ### No Result Flattening
 
