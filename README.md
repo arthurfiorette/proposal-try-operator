@@ -454,8 +454,6 @@ The `try` operator and `Result` constructors wrap the value they are given witho
 
 ### Reference Implementation
 
-> Many thanks to [Szymon Wygnański](https://finalclass.net) for transferring the `try` package name on NPM.
-
 To validate the ergonomics and utility of this proposal, a spec-compliant, runtime-only implementation of the `Result` class has been published to npm as the [`try`](https://www.npmjs.com/package/try) package. This package provides a `t()` function that serves as a polyfill for the `try` operator's runtime behavior, allowing developers to experiment with the core pattern.
 
 ```js
