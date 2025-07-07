@@ -2,8 +2,8 @@
 
 <h1>ECMAScript Try Operator</h1>
 
-> [!WARNING]  
-> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Operator`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-operator/tree/old/proposal-safe-assignment-operator)._
+> [!TIP]  
+> You can test the runtime aspect of this proposal and its ergonomics today! Install our reference `Result` class implementation from NPM:<br/>`npm install try`.
 
 <br />
 
@@ -41,8 +41,10 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Void Operations](#void-operations)
 - [Result Class](#result-class)
   - [Instance Structure](#instance-structure)
-  - [Iterable](#iterable)
+  - [Iterable Protocol](#iterable-protocol)
   - [Manual Creation](#manual-creation)
+  - [No Result Flattening](#no-result-flattening)
+  - [Reference Implementation](#reference-implementation)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [Why a Proposal?](#why-a-proposal)
@@ -369,7 +371,7 @@ This behavior mirrors how JavaScript differentiates blocks and object literals:
 
 <!-- prettier-ignore -->
    ```js
-    { a: 1 } // empty block with a label
+    { a: 1 }  // empty block with a label
    ({ a: 1 }) // object with a key `a` and a number `1`
    ```
 
@@ -404,19 +406,16 @@ function work() {
 
 ## Result Class
 
-> Please see [`polyfill.d.ts`](./polyfill.d.ts) and [`polyfill.js`](./polyfill.js) for a basic implementation of the `Result` class.
-
-The `Result` class represents the form of the value returned by the `try` operator.
+The `try` operator evaluates an expression and returns an instance of the `Result` class, which encapsulates the outcome of the operation.
 
 ### Instance Structure
 
-A `Result` instance contains three properties:
+A `Result` instance always contains a boolean `ok` property that indicates the outcome.
 
-- **`ok`**: A boolean indicating whether the expression was executed successfully.
-- **`error`**: The error thrown during execution, or `undefined` if no error occurred.
-- **`value`**: The data returned from the execution, or `undefined` if an error occurred.
+- If `ok` is `true`, the instance also has a `value` property containing the successful result.
+- If `ok` is `false`, it has an `error` property containing the thrown exception.
 
-Example usage:
+Crucially, a success result does not have an `error` property, and a failure result does not have a `value` property. This allows for reliable checks like `'error' in result`.
 
 ```js
 const result = try something()
@@ -428,9 +427,9 @@ if (result.ok) {
 }
 ```
 
-### Iterable
+### Iterable Protocol
 
-A `Result` instance is iterable, enabling destructuring and different variable names:
+To support ergonomic destructuring, `Result` instances are iterable. They yield their state in the order `[ok, error, value]`, allowing for clear, inline handling of both success and failure cases.
 
 ```js
 const [success, validationError, user] = try User.parse(myJson)
@@ -438,15 +437,35 @@ const [success, validationError, user] = try User.parse(myJson)
 
 ### Manual Creation
 
-You can also create a `Result` instance manually using its constructor or static methods:
+While the `try` operator is the primary source of `Result` instances, they can also be created manually using static methods. This is useful for testing or for bridging with APIs that do not use exceptions.
 
 ```js
-// Creating a successful result
-const result = Result.ok(value)
+// Create a successful result
+const success = Result.ok(42)
 
-// Creating an error result
-const result = Result.error(error)
+// Create a failure result
+const failure = Result.error(new Error("Operation failed"))
 ```
+
+### No Result Flattening
+
+The `try` operator and `Result` constructors wrap the value they are given without inspection. If this value is itself a `Result` instance, it will be nested, not flattened. This ensures predictable and consistent behavior.
+
+### Reference Implementation
+
+> Many thanks to [Szymon Wygnański](https://finalclass.net) for transferring the `try` package name on NPM.
+
+To validate the ergonomics and utility of this proposal, a spec-compliant, runtime-only implementation of the `Result` class has been published to npm as the [`try`](https://www.npmjs.com/package/try) package. This package provides a `t()` function that serves as a polyfill for the `try` operator's runtime behavior, allowing developers to experiment with the core pattern.
+
+```js
+import { t } from "try"
+
+const [ok, err, val] = await t(fetch, "https://api.example.com")
+```
+
+By using the `try` package, developers can adopt the `Result`-based error handling pattern in real-world applications. This allows the proposal to be tested against the ultimate measure of success: whether it proves genuinely useful and improves code quality over time, providing valuable feedback for the standardization process.
+
+You can check the published package at [npmjs.com/package/try](https://www.npmjs.com/package/try) or [github.com/arthurfiorette/try](https://github.com/arthurfiorette/try) and contribute to its development.
 
 <br />
 
@@ -548,7 +567,8 @@ This proposal is in its early stages, and we welcome your input to help refine i
 - [This tweet from @LeaVerou](https://x.com/LeaVerou/status/1819381809773216099)
 - The frequent oversight of error handling in JavaScript code.
 - [Effect TS Error Management](https://effect.website/docs/error-management/two-error-types/)
-- The [`tuple-it`](https://www.npmjs.com/package/tuple-it) npm package, which introduces a similar concept but modifies the `Promise` and `Function` prototypes—an approach that is less ideal.
+- The [`tuple-it`](https://www.npmjs.com/package/tuple-it) npm package, which introduces a similar concept but modifies the `Promise` and `Function` prototypes.
+- [Szymon Wygnański](https://finalclass.net) for donating the `try` package name on NPM to host the reference implementation of this proposal.
 
 <br />
 
