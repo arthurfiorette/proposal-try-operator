@@ -33,7 +33,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
   - [Can be inlined.](#can-be-inlined)
   - [Any valid expression can be used](#any-valid-expression-can-be-used)
-    - [`await` is not an exception](#await-is-not-an-exception)
+    - [`await` is not a special case](#await-is-not-a-special-case)
   - [Statements are not expressions](#statements-are-not-expressions)
   - [Never throws](#never-throws)
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
@@ -288,7 +288,7 @@ try {
 const result = _result
 ```
 
-#### `await` is not an exception
+#### `await` is not a special case
 
 ```js
 const result = try await fetch("https://api.example.com/data")
