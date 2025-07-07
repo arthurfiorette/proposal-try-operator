@@ -557,7 +557,9 @@ By providing such basic conveniences natively, we:
 
 This proposal intentionally combines the `try` operator with the `Result` class because one is incomplete without the other. A standard `Result` class is valuable on its own, as it would unify the countless `Result` and `Option` type implementations that currently fragment the ecosystem. Consistency is key, and a built-in type would establish a common pattern for all developers.
 
-However, the true ergonomic leap comes from the `try` operator. It eliminates the verbose `() => ...` function wrapper required by any library-only solution, which is the primary source of friction. Advancing a runtime-only proposal would be counter-intuitive; it would standardize a pattern but omit the syntax that makes it truly seamless to use. The operator provides the clean syntax, and the class provides the consistent result. They should be considered together.
+It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
+
+Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
 
 <br />
 
