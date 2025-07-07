@@ -291,15 +291,15 @@ const result = _result
 #### `await` is not a special case
 
 ```js
-const result = try await fetch("https://api.example.com/data")
+const result = try await fetch("https://arthur.place")
 ```
 
-This is "equivalent" to:
+Which is only valid in async contexts and equates to:
 
 ```js
 let _result
 try {
-  _result = Result.ok(await fetch("https://api.example.com/data"))
+  _result = Result.ok(await fetch("https://arthur.place"))
 } catch (error) {
   _result = Result.error(error)
 }
@@ -400,7 +400,7 @@ To validate the ergonomics and utility of this proposal, a spec-compliant, runti
 ```js
 import { t } from "try"
 
-const [ok, err, val] = await t(fetch, "https://api.example.com")
+const [ok, err, val] = await t(fetch, "https://arthur.place")
 ```
 
 You can check the published package at [npmjs.com/package/try](https://www.npmjs.com/package/try) or [github.com/arthurfiorette/try](https://github.com/arthurfiorette/try) and contribute to its development.
