@@ -75,7 +75,7 @@ _For more information see the [TC39 proposal process](https://tc39.es/process-do
 
 ## Try/Catch Is Not Enough
 
-<!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 :) -->
+<!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 -->
 
 The `try {}` block often feels redundant because its scoping lacks meaningful conceptual significance. Rather than serving as an essential control flow construct, it mostly acts as a code annotation. Unlike loops or conditionals, a `try {}` block doesn’t encapsulate any distinct program state that requires isolation.
 
@@ -265,7 +265,7 @@ const result = _result
 Similar to `void`, `typeof`, `yield`, and `new`:
 
 ```js
-array.map((fn) => try fn()).filter((result) => result.ok) // works :)
+array.map((fn) => try fn()).filter((result) => result.ok)
 ```
 
 ### Any valid expression can be used
