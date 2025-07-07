@@ -47,7 +47,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [A Case for Syntax](#a-case-for-syntax)
-- [Why a Proposal?](#why-a-proposal)
+- [Why This Belongs in the Language](#why-this-belongs-in-the-language)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Inspiration](#inspiration)
 - [License](#license)
@@ -553,16 +553,13 @@ Without the `try` operator, the `Result` class is just one of many possible libr
 
 <br />
 
-## Why a Proposal?
+## Why This Belongs in the Language
 
 A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
 
-Optional chaining and nullish coalescing are examples of features that could have remained external libraries (e.g., Lodash's `_.get()` for optional chaining and `_.defaultTo()` for nullish coalescing). However, when implemented natively, their usage scales exponentially and becomes a natural part of developers’ workflows. This arguably improves code quality and productivity.
+The absence of a standard `Result` type has led to widespread ecosystem fragmentation. The NPM registry contains hundreds of variations, and countless more exist as private, copy-pasted utilities. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
 
-By providing such basic conveniences natively, we:
-
-- Increase consistency across codebases (many NPM packages already implement variations of this proposal, each with its own API and lack of standardization).
-- Reduce code complexity, making it more readable and less error-prone.
+This is the same problem that optional chaining (`?.`) and nullish coalescing (`??`) solved. **They replaced a landscape of competing utilities with a single, trusted language feature**. By standardizing this pattern, we provide a reliable primitive that developers can use with confidence, knowing it is a stable and permanent part of JavaScript. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
 
 <br />
 
