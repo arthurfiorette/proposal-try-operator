@@ -5,7 +5,7 @@
 > [!TIP]  
 > You can test the runtime aspect of this proposal and its ergonomics today! Install our reference `Result` class implementation from NPM:
 >
-> `npm install try`
+> [`npm install try`](https://www.npmjs.com/package/try)
 
 <br />
 
