@@ -545,7 +545,7 @@ For a more in-depth explanation of this decision, refer to [GitHub Issue #30](ht
 
 ## A Case for Syntax
 
-This proposal intentionally combines the `try` operator with the `Result` class because one is imcomplete without the other. The `try` operator standardizes the many attempts at safely catching synchronous function calls (the way we can with Promise `.catch` for async calls). Consistency is key, and the `try` syntax establishes common patterns for all developers.
+This proposal intentionally combines the `try` operator with the `Result` class because one is incomplete without the other. The `try` operator standardizes the many attempts at safely catching synchronous function calls (the way we can with Promise `.catch` for async calls). Consistency is key, and the `try` syntax establishes common patterns for all developers.
 
 It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
 
