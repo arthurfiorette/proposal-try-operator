@@ -2,8 +2,10 @@
 
 <h1>ECMAScript Try Operator</h1>
 
-> [!WARNING]  
-> After extensive discussion and feedback, the proposal was renamed from `Safe Assignment Operator` to `Try Operator`. _Click here to view the [original proposal](https://github.com/arthurfiorette/proposal-try-operator/tree/old/proposal-safe-assignment-operator)._
+> [!TIP]  
+> You can test the runtime aspect of this proposal and its ergonomics today! Install our reference `Result` class implementation from NPM:
+>
+> [`npm install try`](https://www.npmjs.com/package/try)
 
 <br />
 
@@ -17,40 +19,40 @@ This proposal addresses the ergonomic challenges of managing multiple, often nes
 
 Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
-<details>
-
-<summary>
-  <h2>Table of Contents</h2>
-</summary>
+<br />
 
 - [Status](#status)
 - [Authors](#authors)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Caller's Approach](#callers-approach)
-- [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
-  - [Type-Safe Errors](#type-safe-errors)
-  - [Automatic Error Handling](#automatic-error-handling)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
   - [Can be inlined.](#can-be-inlined)
   - [Any valid expression can be used](#any-valid-expression-can-be-used)
-    - [`await` is not an exception](#await-is-not-an-exception)
+    - [`await` is not a special case](#await-is-not-a-special-case)
   - [Statements are not expressions](#statements-are-not-expressions)
   - [Never throws](#never-throws)
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Void Operations](#void-operations)
 - [Result Class](#result-class)
+  - [Reference Implementation](#reference-implementation)
   - [Instance Structure](#instance-structure)
-  - [Iterable](#iterable)
+  - [Iterable Protocol](#iterable-protocol)
   - [Manual Creation](#manual-creation)
+  - [`try()` static method](#try-static-method)
+  - [No Result Flattening](#no-result-flattening)
+- [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
+  - [Type-Safe Errors](#type-safe-errors)
+  - [Automatic Error Handling](#automatic-error-handling)
 - [Why Not `data` First?](#why-not-data-first)
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
-- [Why a Proposal?](#why-a-proposal)
+- [A Case for Syntax](#a-case-for-syntax)
+- [Why This Belongs in the Language](#why-this-belongs-in-the-language)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Inspiration](#inspiration)
 - [License](#license)
 
-</details>
+<br />
 
 ## Status
 
@@ -70,7 +72,7 @@ _For more information see the [TC39 proposal process](https://tc39.es/process-do
 
 ## Try/Catch Is Not Enough
 
-<!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 :) -->
+<!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 -->
 
 The `try {}` block often feels redundant because its scoping lacks meaningful conceptual significance. Rather than serving as an essential control flow construct, it mostly acts as a code annotation. Unlike loops or conditionals, a `try {}` block doesn’t encapsulate any distinct program state that requires isolation.
 
@@ -212,24 +214,6 @@ Ironically, **these are precisely the kinds of functions where improved error ha
 
 <br />
 
-## What This Proposal Does Not Aim to Solve
-
-### Type-Safe Errors
-
-The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor propose any kind of safety around error handling.
-
-- No generic error type for the proposed [Result](#result-class) class will be added.
-- No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
-- No way to annotate a callable to specify the error type it throws will be added.
-
-For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
-
-### Automatic Error Handling
-
-While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
-
-<br />
-
 ## Try Operator
 
 The `try` operator consists of the `try` keyword followed by an expression. It results in an instance of the [`Result`](#result-class).
@@ -278,7 +262,7 @@ const result = _result
 Similar to `void`, `typeof`, `yield`, and `new`:
 
 ```js
-array.map((fn) => try fn()).filter((result) => result.ok) // works :)
+array.map((fn) => try fn()).filter((result) => result.ok)
 ```
 
 ### Any valid expression can be used
@@ -301,18 +285,18 @@ try {
 const result = _result
 ```
 
-#### `await` is not an exception
+#### `await` is not a special case
 
 ```js
-const result = try await fetch("https://api.example.com/data")
+const result = try await fetch("https://arthur.place")
 ```
 
-This is "equivalent" to:
+Which is only valid in async contexts and equates to:
 
 ```js
 let _result
 try {
-  _result = Result.ok(await fetch("https://api.example.com/data"))
+  _result = Result.ok(await fetch("https://arthur.place"))
 } catch (error) {
   _result = Result.error(error)
 }
@@ -369,7 +353,7 @@ This behavior mirrors how JavaScript differentiates blocks and object literals:
 
 <!-- prettier-ignore -->
    ```js
-    { a: 1 } // empty block with a label
+    { a: 1 }  // empty block with a label
    ({ a: 1 }) // object with a key `a` and a number `1`
    ```
 
@@ -404,19 +388,28 @@ function work() {
 
 ## Result Class
 
-> Please see [`polyfill.d.ts`](./polyfill.d.ts) and [`polyfill.js`](./polyfill.js) for a basic implementation of the `Result` class.
+The `try` operator evaluates an expression and returns an instance of the `Result` class, which encapsulates the outcome of the operation.
 
-The `Result` class represents the form of the value returned by the `try` operator.
+### Reference Implementation
+
+To validate the ergonomics and utility of this proposal, a spec-compliant, runtime-only implementation of the `Result` class has been published to npm as the [`try`](https://www.npmjs.com/package/try) package. This package provides a `t()` function that serves as a polyfill for the `try` operator's runtime behavior, allowing developers to experiment with the core pattern.
+
+```js
+import { t } from "try"
+
+const [ok, err, val] = await t(fetch, "https://arthur.place")
+```
+
+You can check the published package at [npmjs.com/package/try](https://www.npmjs.com/package/try) or [github.com/arthurfiorette/try](https://github.com/arthurfiorette/try) and contribute to its development.
 
 ### Instance Structure
 
-A `Result` instance contains three properties:
+A `Result` instance always contains a boolean `ok` property that indicates the outcome.
 
-- **`ok`**: A boolean indicating whether the expression was executed successfully.
-- **`error`**: The error thrown during execution, or `undefined` if no error occurred.
-- **`value`**: The data returned from the execution, or `undefined` if an error occurred.
+- If `ok` is `true`, the instance also has a `value` property containing the successful result.
+- If `ok` is `false`, it has an `error` property containing the thrown exception.
 
-Example usage:
+Crucially, a success result does not have an `error` property, and a failure result does not have a `value` property. This allows for reliable checks like `'error' in result`.
 
 ```js
 const result = try something()
@@ -428,9 +421,9 @@ if (result.ok) {
 }
 ```
 
-### Iterable
+### Iterable Protocol
 
-A `Result` instance is iterable, enabling destructuring and different variable names:
+To support ergonomic destructuring, `Result` instances are iterable. They yield their state in the order `[ok, error, value]`, allowing for clear, inline handling of both success and failure cases.
 
 ```js
 const [success, validationError, user] = try User.parse(myJson)
@@ -438,15 +431,43 @@ const [success, validationError, user] = try User.parse(myJson)
 
 ### Manual Creation
 
-You can also create a `Result` instance manually using its constructor or static methods:
+While the `try` operator is the primary source of `Result` instances, they can also be created manually using static methods. This is useful for testing or for bridging with APIs that do not use exceptions.
 
 ```js
-// Creating a successful result
-const result = Result.ok(value)
+// Create a successful result
+const success = Result.ok(42)
 
-// Creating an error result
-const result = Result.error(error)
+// Create a failure result
+const failure = Result.error(new Error("Operation failed"))
 ```
+
+### `try()` static method
+
+It also includes a static `Result.try()` method, which serves as the runtime foundation for the `try` operator. This method wraps a function call, catching any synchronous exceptions or asynchronous rejections and returning a `Result` or `Promise<Result>`, respectively.
+
+The proposed `try expression` syntax is essentially an ergonomic improvement over the more verbose `Result.try(() => expression)`, removing the need for a function wrapper.
+
+### No Result Flattening
+
+The `try` operator and `Result` constructors wrap the value they are given without inspection. If this value is itself a `Result` instance, it will be nested, not flattened. This ensures predictable and consistent behavior.
+
+<br />
+
+## What This Proposal Does Not Aim to Solve
+
+### Type-Safe Errors
+
+The `throw` statement in JavaScript can throw any type of value. This proposal does not impose nor propose any kind of safety around error handling.
+
+- No generic error type for the proposed [Result](#result-class) class will be added.
+- No catch branching based on error type will be added. See [GitHub Issue #43](https://github.com/arthurfiorette/proposal-try-operator/issues/43) for more information.
+- No way to annotate a callable to specify the error type it throws will be added.
+
+For more information, also see [microsoft/typescript#13219](https://github.com/Microsoft/TypeScript/issues/13219).
+
+### Automatic Error Handling
+
+While this proposal facilitates error handling, it does not automatically handle errors for you. You will still need to write the necessary code to manage errors the proposal simply aims to make this process easier and more consistent.
 
 <br />
 
@@ -522,16 +543,25 @@ For a more in-depth explanation of this decision, refer to [GitHub Issue #30](ht
 
 <br />
 
-## Why a Proposal?
+## A Case for Syntax
+
+This proposal intentionally combines the `try` operator with the `Result` class because one is incomplete without the other. The `try` operator standardizes the many attempts at safely catching synchronous function calls (the way we can with Promise `.catch` for async calls). Consistency is key, and the `try` syntax establishes common patterns for all developers.
+
+It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
+
+Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
+
+<br />
+
+## Why This Belongs in the Language
 
 A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
 
-Optional chaining and nullish coalescing are examples of features that could have remained external libraries (e.g., Lodash's `_.get()` for optional chaining and `_.defaultTo()` for nullish coalescing). However, when implemented natively, their usage scales exponentially and becomes a natural part of developers’ workflows. This arguably improves code quality and productivity.
+The absence of a `Result`-like type and a standard pattern for safely wrapping function calls has led to widespread ecosystem fragmentation. The NPM registry contains hundreds of variations attempting to implement safe wrapping of function calls, and countless more exist as private, copy-pasted utilities. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
 
-By providing such basic conveniences natively, we:
+This is the same problem that optional chaining (`?.`) and nullish coalescing (`??`) solved. **They replaced a landscape of competing utilities with a single, trusted language feature**. By standardizing this pattern, we provide a reliable primitive that developers can use with confidence, knowing it is a stable and permanent part of JavaScript.
 
-- Increase consistency across codebases (many NPM packages already implement variations of this proposal, each with its own API and lack of standardization).
-- Reduce code complexity, making it more readable and less error-prone.
+It also creates a shared foundation between developers and package authors. Everyone can rely on the same Result implementation without compatibility concerns. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
 
 <br />
 
@@ -548,7 +578,8 @@ This proposal is in its early stages, and we welcome your input to help refine i
 - [This tweet from @LeaVerou](https://x.com/LeaVerou/status/1819381809773216099)
 - The frequent oversight of error handling in JavaScript code.
 - [Effect TS Error Management](https://effect.website/docs/error-management/two-error-types/)
-- The [`tuple-it`](https://www.npmjs.com/package/tuple-it) npm package, which introduces a similar concept but modifies the `Promise` and `Function` prototypes—an approach that is less ideal.
+- The [`tuple-it`](https://www.npmjs.com/package/tuple-it) npm package, which introduces a similar concept but modifies the `Promise` and `Function` prototypes.
+- [Szymon Wygnański](https://finalclass.net) for donating the `try` package name on NPM to host the reference implementation of this proposal.
 
 <br />
 
