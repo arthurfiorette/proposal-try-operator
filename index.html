@@ -1,18 +1,10 @@
 <!doctype html>
-<head><meta charset="utf-8"><meta property="og:image" content="https://tc39.es/ecmarkup/ecma-logo.png"><meta property="og:title" content="ECMAScript Try Operator"><meta property="og:description" content="Assignment Operators
-  Syntax
+<head><meta charset="utf-8"><meta property="og:image" content="https://tc39.es/ecmarkup/ecma-logo.png"><meta property="og:title" content="ECMAScript Try Operator"><meta property="og:description" content="Introduction
   
-    AssignmentExpression[In, Yield, Await] :
-      TryExpression[?In, ?Yield, ?Await]
-    TryExpression[In, Yield, Await] :
-      `try` [no LineTerminator here] [lookahead != `{`] AssignmentExpression[?In, ?Yield, ?Await]
-  
-
-  
-    Runtime Semantics: Evaluation">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/base16/solarized-light.min.css"><link rel="stylesheet" href="./spec.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
-<script src="./spec.js"></script>
+    Important Notice: Until this proposal is accepted by ECMA, this spec.emu file might not reflect the latest updates to the proposal. Readers should base their understanding primarily on the current README.md file, which serves as the authoritative source during the proposal sta">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/base16/solarized-light.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
+<script src="https://bterlson.github.io/ecmarkup/ecmarkup.js"></script>
+<link rel="stylesheet" href="https://bterlson.github.io/ecmarkup/elements.css">
 <title>ECMAScript Try Operator</title><script>'use strict';
 let sdoBox = {
   init() {
@@ -1619,8 +1611,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-let sdoMap = JSON.parse(`{"prod-dpSa2QXU":{"Evaluation":{"clause":"1.1","ids":["prod-PXeEcFj2"]}}}`);
-let biblio = JSON.parse(`{"refsByClause":{"sec-well-known-intrinsic-objects":["_ref_0","_ref_8"],"sec-comma-operator-runtime-semantics-evaluation":["_ref_1","_ref_2","_ref_11"],"sec-try-expression-result":["_ref_3","_ref_4","_ref_5"],"sec-try-expression-result-ok":["_ref_6"],"sec-try-expression-result-error":["_ref_7"],"sec-assignment-operators":["_ref_9","_ref_10"]},"entries":[{"type":"production","id":"prod-AssignmentExpression","name":"AssignmentExpression","referencingIds":["_ref_10","_ref_11"]},{"type":"production","id":"prod-TryExpression","name":"TryExpression","referencingIds":["_ref_9"]},{"type":"clause","id":"sec-comma-operator-runtime-semantics-evaluation","titleHTML":"Runtime Semantics: Evaluation","number":"1.1"},{"type":"op","aoid":"TryExpressionResult","refId":"sec-try-expression-result"},{"type":"clause","id":"sec-try-expression-result","title":"TryExpressionResult ( result )","titleHTML":"TryExpressionResult ( <var>result</var> )","number":"1.2","referencingIds":["_ref_1","_ref_2"]},{"type":"op","aoid":"Result.ok","refId":"sec-try-expression-result-ok"},{"type":"clause","id":"sec-try-expression-result-ok","title":"Result.ok ( value )","titleHTML":"Result.ok ( <var>value</var> )","number":"1.3","referencingIds":["_ref_4"]},{"type":"op","aoid":"Result.error","refId":"sec-try-expression-result-error"},{"type":"clause","id":"sec-try-expression-result-error","title":"Result.error ( value )","titleHTML":"Result.error ( <var>value</var> )","number":"1.4","referencingIds":["_ref_5"]},{"type":"clause","id":"sec-assignment-operators","titleHTML":"Assignment Operators","number":"1"},{"type":"table","id":"table-well-known-intrinsic-objects","number":1,"caption":"Table 1: Well-Known Intrinsic Objects"},{"type":"clause","id":"sec-well-known-intrinsic-objects","titleHTML":"Well-Known Intrinsic Objects","number":"2"},{"type":"term","term":"%Result%","refId":"sec-result-constructor"},{"type":"clause","id":"sec-result-constructor","titleHTML":"The Result Constructor","number":"3","referencingIds":["_ref_0","_ref_3","_ref_6","_ref_7","_ref_8"]},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"A"}]}`);
+let sdoMap = JSON.parse(`{}`);
+let biblio = JSON.parse(`{"refsByClause":{"sec-result.try":["_ref_0"],"sec-result.prototype-@@iterator":["_ref_1"]},"entries":[{"type":"clause","id":"sec-intro","titleHTML":"Introduction","number":""},{"type":"clause","id":"sec-result","title":"Result ( ok, error, value )","titleHTML":"Result ( <var>ok</var>, <var>error</var>, <var>value</var> )","number":"1.1.1"},{"type":"clause","id":"sec-result-constructor","titleHTML":"The Result Constructor","number":"1.1"},{"type":"clause","id":"sec-result.ok","title":"Result.ok ( value )","titleHTML":"Result.ok ( <var>value</var> )","number":"1.2.1"},{"type":"clause","id":"sec-result.error","title":"Result.error ( error )","titleHTML":"Result.error ( <var>error</var> )","number":"1.2.2"},{"type":"op","aoid":"ResultTryImplementation","refId":"sec-result-try-implementation"},{"type":"clause","id":"sec-result-try-implementation","title":"ResultTryImplementation ( arg, args )","titleHTML":"ResultTryImplementation ( <var>arg</var>, <var>args</var> )","number":"1.2.3.1","referencingIds":["_ref_0"]},{"type":"clause","id":"sec-result.try","title":"Result.try ( arg, ...args )","titleHTML":"Result.try ( <var>arg</var>, ...<var>args</var> )","number":"1.2.3"},{"type":"clause","id":"sec-result.prototype","titleHTML":"Result.prototype","number":"1.2.4"},{"type":"clause","id":"sec-properties-of-the-result-constructor","titleHTML":"Properties of the Result Constructor","number":"1.2"},{"type":"clause","id":"sec-result.prototype-@@iterator","titleHTML":"Result.prototype [ %Symbol.iterator% ] ( )","number":"1.3.1"},{"type":"clause","id":"sec-result.prototype.constructor","titleHTML":"Result.prototype.constructor","number":"1.3.2"},{"type":"clause","id":"sec-result.prototype-@@toStringTag","titleHTML":"Result.prototype [ %Symbol.toStringTag% ]","number":"1.3.3"},{"type":"clause","id":"sec-properties-of-the-result-prototype-object","titleHTML":"Properties of the Result Prototype Object","number":"1.3"},{"type":"op","aoid":"CreateResultIterator","refId":"sec-createresultiterator"},{"type":"clause","id":"sec-createresultiterator","title":"CreateResultIterator ( result )","titleHTML":"CreateResultIterator ( <var>result</var> )","number":"1.4.1","referencingIds":["_ref_1"]},{"type":"clause","id":"sec-%resultiteratorprototype%.next","titleHTML":"%ResultIteratorPrototype%.next ( )","number":"1.4.2.1"},{"type":"clause","id":"sec-%resultiteratorprototype%-@@toStringTag","titleHTML":"%ResultIteratorPrototype% [ %Symbol.toStringTag% ]","number":"1.4.2.2"},{"type":"clause","id":"sec-%resultiteratorprototype%-object","titleHTML":"The %ResultIteratorPrototype% Object","number":"1.4.2"},{"type":"clause","id":"sec-result-iterator-objects","titleHTML":"Result Iterator Objects","number":"1.4"},{"type":"clause","id":"sec-result-objects","titleHTML":"Result Objects","number":"1"},{"type":"clause","id":"sec-try-operator-static-semantics","titleHTML":"Static Semantics","number":"2.1.1"},{"type":"clause","id":"sec-try-operator-evaluation","titleHTML":"Runtime Semantics: Evaluation","number":"2.1.2"},{"type":"clause","id":"sec-try-operator-runtime-semantics","titleHTML":"Runtime Semantics","number":"2.1"},{"type":"clause","id":"sec-try-operator-await-interaction","titleHTML":"Interaction with Await","number":"2.2"},{"type":"clause","id":"sec-try-operator","titleHTML":"The Try Operator","number":"2"},{"type":"clause","id":"sec-isvalidsimpleassignmenttarget","titleHTML":"Static Semantics: IsValidSimpleAssignmentTarget","number":"3.1"},{"type":"clause","id":"sec-syntax-directed-operations","titleHTML":"Syntax-Directed Operations","number":"3"},{"type":"clause","id":"sec-expressions","titleHTML":"Expressions","number":"A.1"},{"type":"clause","id":"sec-grammar-summary","titleHTML":"Grammar Summary","number":"A"},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"B"}]}`);
 ;let usesMultipage = false</script><style>/* IBM Plex fonts (Latin subset) have been downloaded from Google Fonts and modified to add support back in for the `zero` substitution (slashed zeroes) */
 
 /* https://fonts.googleapis.com/css2?family=IBM%20Plex%20Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap */
@@ -3297,119 +3289,236 @@ emu-intro {
 </ul></div><div id="menu-toggle"><svg xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%; stroke:currentColor" viewBox="0 0 120 120" width="54" height="54">
       <title>Menu</title>
       <path stroke-width="10" stroke-linecap="round" d="M30,60 h60  M30,30 m0,5 h60  M30,90 m0,-5 h60"></path>
-    </svg></div><div id="menu-spacer" class="menu-spacer"></div><div id="menu"><div id="menu-search"><input type="text" id="menu-search-box" placeholder="Search..."><div id="menu-search-results" class="inactive"></div></div><div id="menu-pins"><div class="menu-pane-header">Pins<button class="unpin-all">clear</button></div><ul id="menu-pins-list"></ul></div><div class="menu-pane-header">Table of Contents</div><div id="menu-toc"><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-assignment-operators" title="Assignment Operators"><span class="secnum">1</span> Assignment Operators</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-comma-operator-runtime-semantics-evaluation" title="Runtime Semantics: Evaluation"><span class="secnum">1.1</span> RS: Evaluation</a></li><li><span class="item-toggle-none"></span><a href="#sec-try-expression-result" title="TryExpressionResult ( result )"><span class="secnum">1.2</span> TryExpressionResult ( <var>result</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-try-expression-result-ok" title="Result.ok ( value )"><span class="secnum">1.3</span> Result.ok ( <var>value</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-try-expression-result-error" title="Result.error ( value )"><span class="secnum">1.4</span> Result.error ( <var>value</var> )</a></li></ol></li><li><span class="item-toggle-none"></span><a href="#sec-well-known-intrinsic-objects" title="Well-Known Intrinsic Objects"><span class="secnum">2</span> Well-Known Intrinsic Objects</a></li><li><span class="item-toggle-none"></span><a href="#sec-result-constructor" title="The Result Constructor"><span class="secnum">3</span> The Result Constructor</a></li><li><span class="item-toggle-none"></span><a href="#sec-copyright-and-software-license" title="Copyright &amp; Software License"><span class="secnum">A</span> Copyright &amp; Software License</a></li></ol></div></div><div id="spec-container"><h1 class="version">Stage -1 Draft / February 27, 2025</h1><h1 class="title">ECMAScript Try Operator</h1>
+    </svg></div><div id="menu-spacer" class="menu-spacer"></div><div id="menu"><div id="menu-search"><input type="text" id="menu-search-box" placeholder="Search..."><div id="menu-search-results" class="inactive"></div></div><div id="menu-pins"><div class="menu-pane-header">Pins<button class="unpin-all">clear</button></div><ul id="menu-pins-list"></ul></div><div class="menu-pane-header">Table of Contents</div><div id="menu-toc"><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-intro" title="Introduction">Introduction</a></li><li><span class="item-toggle">+</span><a href="#sec-result-objects" title="Result Objects"><span class="secnum">1</span> Result Objects</a><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-result-constructor" title="The Result Constructor"><span class="secnum">1.1</span> The Result Constructor</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-result" title="Result ( ok, error, value )"><span class="secnum">1.1.1</span> Result ( <var>ok</var>, <var>error</var>, <var>value</var> )</a></li></ol></li><li><span class="item-toggle">+</span><a href="#sec-properties-of-the-result-constructor" title="Properties of the Result Constructor"><span class="secnum">1.2</span> Properties of the Result Constructor</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-result.ok" title="Result.ok ( value )"><span class="secnum">1.2.1</span> Result.ok ( <var>value</var> )</a></li><li><span class="item-toggle-none"></span><a href="#sec-result.error" title="Result.error ( error )"><span class="secnum">1.2.2</span> Result.error ( <var>error</var> )</a></li><li><span class="item-toggle">+</span><a href="#sec-result.try" title="Result.try ( arg, ...args )"><span class="secnum">1.2.3</span> Result.try ( <var>arg</var>, ...<var>args</var> )</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-result-try-implementation" title="ResultTryImplementation ( arg, args )"><span class="secnum">1.2.3.1</span> ResultTryImplementation ( <var>arg</var>, <var>args</var> )</a></li></ol></li><li><span class="item-toggle-none"></span><a href="#sec-result.prototype" title="Result.prototype"><span class="secnum">1.2.4</span> Result.prototype</a></li></ol></li><li><span class="item-toggle">+</span><a href="#sec-properties-of-the-result-prototype-object" title="Properties of the Result Prototype Object"><span class="secnum">1.3</span> Properties of the Result Prototype Object</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-result.prototype-@@iterator" title="Result.prototype [ %Symbol.iterator% ] ( )"><span class="secnum">1.3.1</span> Result.prototype [ %Symbol.iterator% ] ( )</a></li><li><span class="item-toggle-none"></span><a href="#sec-result.prototype.constructor" title="Result.prototype.constructor"><span class="secnum">1.3.2</span> Result.prototype.constructor</a></li><li><span class="item-toggle-none"></span><a href="#sec-result.prototype-@@toStringTag" title="Result.prototype [ %Symbol.toStringTag% ]"><span class="secnum">1.3.3</span> Result.prototype [ %Symbol.toStringTag% ]</a></li></ol></li><li><span class="item-toggle">+</span><a href="#sec-result-iterator-objects" title="Result Iterator Objects"><span class="secnum">1.4</span> Result Iterator Objects</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-createresultiterator" title="CreateResultIterator ( result )"><span class="secnum">1.4.1</span> CreateResultIterator ( <var>result</var> )</a></li><li><span class="item-toggle">+</span><a href="#sec-%resultiteratorprototype%-object" title="The %ResultIteratorPrototype% Object"><span class="secnum">1.4.2</span> The %ResultIteratorPrototype% Object</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-%resultiteratorprototype%.next" title="%ResultIteratorPrototype%.next ( )"><span class="secnum">1.4.2.1</span> %ResultIteratorPrototype%.next ( )</a></li><li><span class="item-toggle-none"></span><a href="#sec-%resultiteratorprototype%-@@toStringTag" title="%ResultIteratorPrototype% [ %Symbol.toStringTag% ]"><span class="secnum">1.4.2.2</span> %ResultIteratorPrototype% [ %Symbol.toStringTag% ]</a></li></ol></li></ol></li></ol></li><li><span class="item-toggle">+</span><a href="#sec-try-operator" title="The Try Operator"><span class="secnum">2</span> The Try Operator</a><ol class="toc"><li><span class="item-toggle">+</span><a href="#sec-try-operator-runtime-semantics" title="Runtime Semantics"><span class="secnum">2.1</span> Runtime Semantics</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-try-operator-static-semantics" title="Static Semantics"><span class="secnum">2.1.1</span> Static Semantics</a></li><li><span class="item-toggle-none"></span><a href="#sec-try-operator-evaluation" title="Runtime Semantics: Evaluation"><span class="secnum">2.1.2</span> RS: Evaluation</a></li></ol></li><li><span class="item-toggle-none"></span><a href="#sec-try-operator-await-interaction" title="Interaction with Await"><span class="secnum">2.2</span> Interaction with Await</a></li></ol></li><li><span class="item-toggle">+</span><a href="#sec-syntax-directed-operations" title="Syntax-Directed Operations"><span class="secnum">3</span> Syntax-Directed Operations</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-isvalidsimpleassignmenttarget" title="Static Semantics: IsValidSimpleAssignmentTarget"><span class="secnum">3.1</span> SS: IsValidSimpleAssignmentTarget</a></li></ol></li><li><span class="item-toggle">+</span><a href="#sec-grammar-summary" title="Grammar Summary"><span class="secnum">A</span> Grammar Summary</a><ol class="toc"><li><span class="item-toggle-none"></span><a href="#sec-expressions" title="Expressions"><span class="secnum">A.1</span> Expressions</a></li></ol></li><li><span class="item-toggle-none"></span><a href="#sec-copyright-and-software-license" title="Copyright &amp; Software License"><span class="secnum">B</span> Copyright &amp; Software License</a></li></ol></div></div><div id="spec-container"><h1 class="version">Stage 0 Draft / July 25, 2025</h1><h1 class="title">ECMAScript Try Operator</h1>
 
-<emu-biblio href="node_modules/@tc39/ecma262-biblio/biblio.json"></emu-biblio>
+<emu-intro id="sec-intro">
+  <h1>Introduction</h1>
+  <emu-note><span class="note">Note</span><div class="note-contents">
+    <p><strong>Important Notice:</strong> Until this proposal is accepted by ECMA, this spec.emu file might not reflect the latest updates to the proposal. Readers should base their understanding primarily on the current <a href="https://github.com/arthurfiorette/proposal-try-operator/blob/main/README.md" data-print-href="">README.md</a> file, which serves as the authoritative source during the proposal stage. This specification is an imagination of what the final specification might look like and while it can be trusted as a reference, the README.md has higher importance at this stage of the project.</p>
+  </div></emu-note>
+  <p>This proposal introduces a <code>try</code> operator and <code>Result</code> class to JavaScript for improved error handling ergonomics. The <code>try</code> operator evaluates an expression within an implicit try-catch block and returns a <code>Result</code> instance containing either the successful value or the caught error.</p>
+</emu-intro>
 
-<emu-clause id="sec-assignment-operators">
-  <h1><span class="secnum">1</span> Assignment Operators</h1>
-  <h2>Syntax</h2>
-  <emu-grammar type="definition"><emu-production name="AssignmentExpression" params="In, Yield, Await" id="prod-AssignmentExpression">
-    <emu-nt params="In, Yield, Await"><a href="#prod-AssignmentExpression">AssignmentExpression</a><emu-mods><emu-params>[In, Yield, Await]</emu-params></emu-mods></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="mvp22rct">
-        <emu-nt params="?In, ?Yield, ?Await" id="_ref_9"><a href="#prod-TryExpression">TryExpression</a><emu-mods><emu-params>[?In, ?Yield, ?Await]</emu-params></emu-mods></emu-nt>
-    </emu-rhs>
-</emu-production>
-<emu-production name="TryExpression" params="In, Yield, Await" id="prod-TryExpression">
-    <emu-nt params="In, Yield, Await"><a href="#prod-TryExpression">TryExpression</a><emu-mods><emu-params>[In, Yield, Await]</emu-params></emu-mods></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="34mivnjw" id="prod-dpSa2QXU">
-        <emu-t>try</emu-t>
-        <emu-gann>[no <emu-nt><a href="https://tc39.es/ecma262/#prod-LineTerminator">LineTerminator</a></emu-nt> here]</emu-gann>
-        <emu-gann>[lookahead ≠ <emu-t>{</emu-t>]</emu-gann>
-        <emu-nt params="?In, ?Yield, ?Await" id="_ref_10"><a href="#prod-AssignmentExpression">AssignmentExpression</a><emu-mods><emu-params>[?In, ?Yield, ?Await]</emu-params></emu-mods></emu-nt>
-    </emu-rhs>
-</emu-production>
-</emu-grammar>
+<emu-clause id="sec-result-objects">
+  <h1><span class="secnum">1</span> Result Objects</h1>
 
-  <emu-clause id="sec-comma-operator-runtime-semantics-evaluation" type="sdo">
-    <h1><span class="secnum">1.1</span> Runtime Semantics: Evaluation</h1>
-    <emu-grammar><emu-production name="TryExpression" collapsed="">
-    <emu-nt><a href="#prod-TryExpression">TryExpression</a></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="tddcjhkh" id="prod-PXeEcFj2">
-        <emu-t>try</emu-t>
-        <emu-nt id="_ref_11"><a href="#prod-AssignmentExpression">AssignmentExpression</a></emu-nt>
-    </emu-rhs>
-</emu-production>
-</emu-grammar>
-    <emu-alg><ol><li>Let <var>A</var> be <emu-xref aoid="Completion"><a href="https://tc39.es/ecma262/#sec-completion-ao">Completion</a></emu-xref>(<emu-xref aoid="Evaluation"><a href="https://tc39.es/ecma262/#sec-evaluation">Evaluation</a></emu-xref> of <emu-nt><a href="https://tc39.es/ecma262/#prod-Expression">Expression</a></emu-nt>).</li><li>If <var>A</var> is an <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">abrupt completion</a></emu-xref>, return ?&nbsp;<emu-xref aoid="TryExpressionResult" id="_ref_1"><a href="#sec-try-expression-result">TryExpressionResult</a></emu-xref>(<var>A</var>).</li><li>Let <var>B</var> be <emu-xref aoid="Completion"><a href="https://tc39.es/ecma262/#sec-completion-ao">Completion</a></emu-xref>(<emu-xref aoid="GetValue"><a href="https://tc39.es/ecma262/#sec-getvalue">GetValue</a></emu-xref>(<var>A</var>)).</li><li>Return ?&nbsp;<emu-xref aoid="TryExpressionResult" id="_ref_2"><a href="#sec-try-expression-result">TryExpressionResult</a></emu-xref>(<var>B</var>).</li></ol></emu-alg>
-    <emu-note><span class="note">Note</span><div class="note-contents">
-      <p><emu-xref aoid="GetValue"><a href="https://tc39.es/ecma262/#sec-getvalue">GetValue</a></emu-xref> must be called even though its value is not used because it may have observable side-effects.</p>
-    </div></emu-note>
+  <emu-clause id="sec-result-constructor">
+    <h1><span class="secnum">1.1</span> The Result Constructor</h1>
+    <p>The Result <emu-xref href="#constructor"><a href="https://tc39.es/ecma262/#constructor">constructor</a></emu-xref> is the %Result% intrinsic object. When called as a <emu-xref href="#constructor"><a href="https://tc39.es/ecma262/#constructor">constructor</a></emu-xref>, it creates and initializes a new Result object.</p>
+
+    <emu-clause id="sec-result">
+      <h1><span class="secnum">1.1.1</span> Result ( <var>ok</var>, <var>error</var>, <var>value</var> )</h1>
+      <p>When <code>Result</code> is called with arguments <var>ok</var>, <var>error</var>, and <var>value</var>, the following steps are taken:</p>
+      <emu-alg><ol><li>If NewTarget is <emu-val>undefined</emu-val>, throw a <emu-val>TypeError</emu-val> exception.</li><li>Let <var>result</var> be ?&nbsp;<emu-xref aoid="OrdinaryCreateFromConstructor"><a href="https://tc39.es/ecma262/#sec-ordinarycreatefromconstructor">OrdinaryCreateFromConstructor</a></emu-xref>(NewTarget, <emu-val>"%Result.prototype%"</emu-val>, « <var class="field">[[ResultState]]</var>, <var class="field">[[ResultValue]]</var>, <var class="field">[[ResultError]]</var>&nbsp;»).</li><li>Let <var>booleanOk</var> be <emu-xref aoid="ToBoolean"><a href="https://tc39.es/ecma262/#sec-toboolean">ToBoolean</a></emu-xref>(<var>ok</var>).</li><li>Perform !&nbsp;<emu-xref aoid="CreateDataPropertyOrThrow"><a href="https://tc39.es/ecma262/#sec-createdatapropertyorthrow">CreateDataPropertyOrThrow</a></emu-xref>(<var>result</var>, <emu-val>"ok"</emu-val>, <var>booleanOk</var>).</li><li>If <var>booleanOk</var> is <emu-val>true</emu-val>, then<ol><li>Set <var>result</var>.<var class="field">[[ResultState]]</var> to <emu-const>success</emu-const>.</li><li>Set <var>result</var>.<var class="field">[[ResultValue]]</var> to <var>value</var>.</li><li>Perform !&nbsp;<emu-xref aoid="CreateDataPropertyOrThrow"><a href="https://tc39.es/ecma262/#sec-createdatapropertyorthrow">CreateDataPropertyOrThrow</a></emu-xref>(<var>result</var>, <emu-val>"value"</emu-val>, <var>value</var>).</li></ol></li><li>Else,<ol><li>Set <var>result</var>.<var class="field">[[ResultState]]</var> to <emu-const>failure</emu-const>.</li><li>Set <var>result</var>.<var class="field">[[ResultError]]</var> to <var>error</var>.</li><li>Perform !&nbsp;<emu-xref aoid="CreateDataPropertyOrThrow"><a href="https://tc39.es/ecma262/#sec-createdatapropertyorthrow">CreateDataPropertyOrThrow</a></emu-xref>(<var>result</var>, <emu-val>"error"</emu-val>, <var>error</var>).</li></ol></li><li>Return <var>result</var>.</li></ol></emu-alg>
+    </emu-clause>
   </emu-clause>
 
-  <emu-clause id="sec-try-expression-result" type="abstract operation" aoid="TryExpressionResult">
-    <h1><span class="secnum">1.2</span> TryExpressionResult ( <var>result</var> )</h1>
-    <p>The abstract operation TryExpressionResult takes argument <var>result</var> (a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">Completion Record</a></emu-xref>) and returns either a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">normal completion containing</a></emu-xref> a <emu-xref href="#sec-result-constructor" id="_ref_3"><a href="#sec-result-constructor">Result</a></emu-xref> or an <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">abrupt completion</a></emu-xref>. It performs the following steps when called:</p>
-    <emu-alg><ol><li>If <var>result</var> is a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">normal completion</a></emu-xref>, return <emu-xref aoid="Result.ok" id="_ref_4"><a href="#sec-try-expression-result-ok">Result.ok</a></emu-xref>(<var>result</var>.<var class="field">[[VALUE]]</var>).</li><li>If <var>result</var> is a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">throw completion</a></emu-xref>, return <emu-xref aoid="Result.error" id="_ref_5"><a href="#sec-try-expression-result-error">Result.error</a></emu-xref>(<var>result</var>.<var class="field">[[VALUE]]</var>).</li><li>Return ?&nbsp;<var>result</var>.</li></ol></emu-alg>
+  <emu-clause id="sec-properties-of-the-result-constructor">
+    <h1><span class="secnum">1.2</span> Properties of the Result Constructor</h1>
+
+    <emu-clause id="sec-result.ok">
+      <h1><span class="secnum">1.2.1</span> Result.ok ( <var>value</var> )</h1>
+      <p>When the <code>Result.ok</code> method is called with argument <var>value</var>, the following steps are taken:</p>
+      <emu-alg><ol><li>Let <var>result</var> be ?&nbsp;<emu-xref aoid="Construct"><a href="https://tc39.es/ecma262/#sec-construct">Construct</a></emu-xref>(%Result%, « <emu-val>true</emu-val>, <emu-val>undefined</emu-val>, <var>value</var>&nbsp;»).</li><li>Return <var>result</var>.</li></ol></emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-result.error">
+      <h1><span class="secnum">1.2.2</span> Result.error ( <var>error</var> )</h1>
+      <p>When the <code>Result.error</code> method is called with argument <var>error</var>, the following steps are taken:</p>
+      <emu-alg><ol><li>Let <var>result</var> be ?&nbsp;<emu-xref aoid="Construct"><a href="https://tc39.es/ecma262/#sec-construct">Construct</a></emu-xref>(%Result%, « <emu-val>false</emu-val>, <var>error</var>, <emu-val>undefined</emu-val>&nbsp;»).</li><li>Return <var>result</var>.</li></ol></emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-result.try">
+      <h1><span class="secnum">1.2.3</span> Result.try ( <var>arg</var>, ...<var>args</var> )</h1>
+      <p>When the <code>Result.try</code> method is called with argument <var>arg</var> and optional arguments <var>args</var>, the following steps are taken:</p>
+      <emu-alg><ol><li>Let <var>completion</var> be <emu-xref aoid="Completion"><a href="https://tc39.es/ecma262/#sec-completion-ao">Completion</a></emu-xref>(<emu-xref aoid="ResultTryImplementation" id="_ref_0"><a href="#sec-result-try-implementation">ResultTryImplementation</a></emu-xref>(<var>arg</var>, <var>args</var>)).</li><li>If <var>completion</var> is an <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">abrupt completion</a></emu-xref>, then<ol><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.error%, %Result%, « <var>completion</var>.<var class="field">[[Value]]</var>&nbsp;»).</li></ol></li><li>Return <var>completion</var>.<var class="field">[[Value]]</var>.</li></ol></emu-alg>
+
+      <emu-clause id="sec-result-try-implementation" type="abstract operation" aoid="ResultTryImplementation">
+        <h1><span class="secnum">1.2.3.1</span> ResultTryImplementation ( <var>arg</var>, <var>args</var> )</h1>
+        <p>The abstract operation ResultTryImplementation takes arguments <var>arg</var> and <var>args</var>. It performs the following steps when called:</p>
+        <emu-alg><ol><li>Let <var>result</var> be <emu-val>undefined</emu-val>.</li><li>If <emu-xref aoid="IsCallable"><a href="https://tc39.es/ecma262/#sec-iscallable">IsCallable</a></emu-xref>(<var>arg</var>) is <emu-val>true</emu-val>, then<ol><li>Let <var>callResult</var> be <emu-xref aoid="Completion"><a href="https://tc39.es/ecma262/#sec-completion-ao">Completion</a></emu-xref>(<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(<var>arg</var>, <emu-val>undefined</emu-val>, <var>args</var>)).</li><li>If <var>callResult</var> is an <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">abrupt completion</a></emu-xref>, then<ol><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.error%, %Result%, « <var>callResult</var>.<var class="field">[[Value]]</var>&nbsp;»).</li></ol></li><li>Set <var>result</var> to <var>callResult</var>.<var class="field">[[Value]]</var>.</li></ol></li><li>Else,<ol><li>Set <var>result</var> to <var>arg</var>.</li></ol></li><li>If <var>result</var> <emu-xref href="#sec-object-type"><a href="https://tc39.es/ecma262/#sec-object-type">is an Object</a></emu-xref> and <emu-xref aoid="IsPromise"><a href="https://tc39.es/ecma262/#sec-ispromise">IsPromise</a></emu-xref>(<var>result</var>) is <emu-val>true</emu-val>, then<ol><li>Let <var>fulfillmentHandler</var> be a new <emu-xref href="#sec-abstract-closure"><a href="https://tc39.es/ecma262/#sec-abstract-closure">Abstract Closure</a></emu-xref> with parameters (<var>value</var>) that captures nothing and performs the following steps when called:<ol><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.ok%, %Result%, « <var>value</var>&nbsp;»).</li></ol></li><li>Let <var>rejectionHandler</var> be a new <emu-xref href="#sec-abstract-closure"><a href="https://tc39.es/ecma262/#sec-abstract-closure">Abstract Closure</a></emu-xref> with parameters (<var>reason</var>) that captures nothing and performs the following steps when called:<ol><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.error%, %Result%, « <var>reason</var>&nbsp;»).</li></ol></li><li>Let <var>onFulfilled</var> be <emu-xref aoid="CreateBuiltinFunction"><a href="https://tc39.es/ecma262/#sec-createbuiltinfunction">CreateBuiltinFunction</a></emu-xref>(<var>fulfillmentHandler</var>, 1, <emu-val>""</emu-val>, «&nbsp;»).</li><li>Let <var>onRejected</var> be <emu-xref aoid="CreateBuiltinFunction"><a href="https://tc39.es/ecma262/#sec-createbuiltinfunction">CreateBuiltinFunction</a></emu-xref>(<var>rejectionHandler</var>, 1, <emu-val>""</emu-val>, «&nbsp;»).</li><li>Return <emu-xref aoid="PerformPromiseThen"><a href="https://tc39.es/ecma262/#sec-performpromisethen">PerformPromiseThen</a></emu-xref>(<var>result</var>, <var>onFulfilled</var>, <var>onRejected</var>).</li></ol></li><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.ok%, %Result%, « <var>result</var>&nbsp;»).</li></ol></emu-alg>
+      </emu-clause>
+    </emu-clause>
+
+    <emu-clause id="sec-result.prototype">
+      <h1><span class="secnum">1.2.4</span> Result.prototype</h1>
+      <p>The initial value of <code>Result.prototype</code> is the Result prototype object.</p>
+      <p>This property has the attributes { <var class="field">[[Writable]]</var>: <emu-val>false</emu-val>, <var class="field">[[Enumerable]]</var>: <emu-val>false</emu-val>, <var class="field">[[Configurable]]</var>: <emu-val>false</emu-val> }.</p>
+    </emu-clause>
   </emu-clause>
-  <emu-clause id="sec-try-expression-result-ok" type="abstract operation" aoid="Result.ok">
-    <h1><span class="secnum">1.3</span> Result.ok ( <var>value</var> )</h1>
-    <p>The abstract operation Result.ok takes argument <var>value</var> (an <emu-xref href="#sec-ecmascript-language-types"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types">ECMAScript language value</a></emu-xref>) and returns a <emu-xref href="#sec-result-constructor" id="_ref_6"><a href="#sec-result-constructor">Result</a></emu-xref>. It is the abstract equivelant of calling <code>Result.ok(value)</code></p>
+
+  <emu-clause id="sec-properties-of-the-result-prototype-object">
+    <h1><span class="secnum">1.3</span> Properties of the Result Prototype Object</h1>
+    <p>The Result prototype object:</p>
+    <ul>
+      <li>is an <emu-xref href="#ordinary-object"><a href="https://tc39.es/ecma262/#ordinary-object">ordinary object</a></emu-xref>.</li>
+      <li>is not a Result instance and does not have <var class="field">[[ResultState]]</var>, <var class="field">[[ResultValue]]</var>, or <var class="field">[[ResultError]]</var> internal slots.</li>
+      <li>has a <var class="field">[[Prototype]]</var> internal slot whose value is <emu-xref href="#sec-properties-of-the-object-prototype-object"><a href="https://tc39.es/ecma262/#sec-properties-of-the-object-prototype-object">%Object.prototype%</a></emu-xref>.</li>
+    </ul>
+
+    <emu-clause id="sec-result.prototype-@@iterator">
+      <h1><span class="secnum">1.3.1</span> Result.prototype [ %Symbol.iterator% ] ( )</h1>
+      <p>When the <emu-xref href="#sec-well-known-symbols"><a href="https://tc39.es/ecma262/#sec-well-known-symbols">%Symbol.iterator%</a></emu-xref> method is called, the following steps are taken:</p>
+      <emu-alg><ol><li>Let <var>result</var> be the <emu-val>this</emu-val> value.</li><li>Return ?&nbsp;<emu-xref aoid="CreateResultIterator" id="_ref_1"><a href="#sec-createresultiterator">CreateResultIterator</a></emu-xref>(<var>result</var>).</li></ol></emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-result.prototype.constructor">
+      <h1><span class="secnum">1.3.2</span> Result.prototype.constructor</h1>
+      <p>The initial value of <code>Result.prototype.constructor</code> is %Result%.</p>
+    </emu-clause>
+
+    <emu-clause id="sec-result.prototype-@@toStringTag">
+      <h1><span class="secnum">1.3.3</span> Result.prototype [ %Symbol.toStringTag% ]</h1>
+      <p>The initial value of the <emu-xref href="#sec-well-known-symbols"><a href="https://tc39.es/ecma262/#sec-well-known-symbols">%Symbol.toStringTag%</a></emu-xref> property is the String value <emu-val>"Result"</emu-val>.</p>
+      <p>This property has the attributes { <var class="field">[[Writable]]</var>: <emu-val>false</emu-val>, <var class="field">[[Enumerable]]</var>: <emu-val>false</emu-val>, <var class="field">[[Configurable]]</var>: <emu-val>true</emu-val> }.</p>
+    </emu-clause>
   </emu-clause>
-  <emu-clause id="sec-try-expression-result-error" type="abstract operation" aoid="Result.error">
-    <h1><span class="secnum">1.4</span> Result.error ( <var>value</var> )</h1>
-    <p>The abstract operation Result.error takes argument <var>value</var> (an <emu-xref href="#sec-ecmascript-language-types"><a href="https://tc39.es/ecma262/#sec-ecmascript-language-types">ECMAScript language value</a></emu-xref>) and returns a <emu-xref href="#sec-result-constructor" id="_ref_7"><a href="#sec-result-constructor">Result</a></emu-xref>. It is the abstract equivelant of calling <code>Result.error(value)</code></p>
+
+  <emu-clause id="sec-result-iterator-objects">
+    <h1><span class="secnum">1.4</span> Result Iterator Objects</h1>
+    <p>A Result <emu-xref href="#sec-iterator-interface"><a href="https://tc39.es/ecma262/#sec-iterator-interface">Iterator</a></emu-xref> is an object that represents a specific iteration over a Result instance. There is not a named <emu-xref href="#constructor"><a href="https://tc39.es/ecma262/#constructor">constructor</a></emu-xref> for Result <emu-xref href="#sec-iterator-interface"><a href="https://tc39.es/ecma262/#sec-iterator-interface">Iterator objects</a></emu-xref>.</p>
+
+    <emu-clause id="sec-createresultiterator" type="abstract operation" aoid="CreateResultIterator">
+      <h1><span class="secnum">1.4.1</span> CreateResultIterator ( <var>result</var> )</h1>
+      <p>The abstract operation CreateResultIterator takes argument <var>result</var> (a Result object) and returns either a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">normal completion containing</a></emu-xref> a Result <emu-xref href="#sec-iterator-interface"><a href="https://tc39.es/ecma262/#sec-iterator-interface">Iterator</a></emu-xref> or a <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">throw completion</a></emu-xref>. It performs the following steps when called:</p>
+      <emu-alg><ol><li>Perform ?&nbsp;<emu-xref aoid="RequireInternalSlot"><a href="https://tc39.es/ecma262/#sec-requireinternalslot">RequireInternalSlot</a></emu-xref>(<var>result</var>, <var class="field">[[ResultState]]</var>).</li><li>Let <var>iterator</var> be <emu-xref aoid="OrdinaryObjectCreate"><a href="https://tc39.es/ecma262/#sec-ordinaryobjectcreate">OrdinaryObjectCreate</a></emu-xref>(%ResultIteratorPrototype%, « <var class="field">[[IteratedResult]]</var>, <var class="field">[[ResultIteratorNextIndex]]</var>&nbsp;»).</li><li>Set <var>iterator</var>.<var class="field">[[IteratedResult]]</var> to <var>result</var>.</li><li>Set <var>iterator</var>.<var class="field">[[ResultIteratorNextIndex]]</var> to 0.</li><li>Return <var>iterator</var>.</li></ol></emu-alg>
+    </emu-clause>
+
+    <emu-clause id="sec-%resultiteratorprototype%-object">
+      <h1><span class="secnum">1.4.2</span> The %ResultIteratorPrototype% Object</h1>
+      <p>The %ResultIteratorPrototype% object:</p>
+      <ul>
+        <li>has a <var class="field">[[Prototype]]</var> internal slot whose value is %IteratorPrototype%.</li>
+        <li>is an <emu-xref href="#ordinary-object"><a href="https://tc39.es/ecma262/#ordinary-object">ordinary object</a></emu-xref>.</li>
+      </ul>
+
+      <emu-clause id="sec-%resultiteratorprototype%.next">
+        <h1><span class="secnum">1.4.2.1</span> %ResultIteratorPrototype%.next ( )</h1>
+        <emu-alg><ol><li>Let <var>iterator</var> be the <emu-val>this</emu-val> value.</li><li>Perform ?&nbsp;<emu-xref aoid="RequireInternalSlot"><a href="https://tc39.es/ecma262/#sec-requireinternalslot">RequireInternalSlot</a></emu-xref>(<var>iterator</var>, <var class="field">[[IteratedResult]]</var>).</li><li>Let <var>result</var> be <var>iterator</var>.<var class="field">[[IteratedResult]]</var>.</li><li>Let <var>index</var> be <var>iterator</var>.<var class="field">[[ResultIteratorNextIndex]]</var>.</li><li>If <var>index</var> is 0, then<ol><li>Set <var>iterator</var>.<var class="field">[[ResultIteratorNextIndex]]</var> to 1.</li><li>Let <var>okValue</var> be ?&nbsp;<emu-xref aoid="Get"><a href="https://tc39.es/ecma262/#sec-get-o-p">Get</a></emu-xref>(<var>result</var>, <emu-val>"ok"</emu-val>).</li><li>Return <emu-xref aoid="CreateIteratorResultObject"><a href="https://tc39.es/ecma262/#sec-createiterresultobject">CreateIteratorResultObject</a></emu-xref>(<var>okValue</var>, <emu-val>false</emu-val>).</li></ol></li><li>Else if <var>index</var> is 1, then<ol><li>Set <var>iterator</var>.<var class="field">[[ResultIteratorNextIndex]]</var> to 2.</li><li>If ?&nbsp;<emu-xref aoid="HasProperty"><a href="https://tc39.es/ecma262/#sec-hasproperty">HasProperty</a></emu-xref>(<var>result</var>, <emu-val>"error"</emu-val>) is <emu-val>true</emu-val>, then<ol><li>Let <var>errorValue</var> be ?&nbsp;<emu-xref aoid="Get"><a href="https://tc39.es/ecma262/#sec-get-o-p">Get</a></emu-xref>(<var>result</var>, <emu-val>"error"</emu-val>).</li><li>Return <emu-xref aoid="CreateIteratorResultObject"><a href="https://tc39.es/ecma262/#sec-createiterresultobject">CreateIteratorResultObject</a></emu-xref>(<var>errorValue</var>, <emu-val>false</emu-val>).</li></ol></li><li>Else,<ol><li>Return <emu-xref aoid="CreateIteratorResultObject"><a href="https://tc39.es/ecma262/#sec-createiterresultobject">CreateIteratorResultObject</a></emu-xref>(<emu-val>undefined</emu-val>, <emu-val>false</emu-val>).</li></ol></li></ol></li><li>Else if <var>index</var> is 2, then<ol><li>Set <var>iterator</var>.<var class="field">[[ResultIteratorNextIndex]]</var> to 3.</li><li>If ?&nbsp;<emu-xref aoid="HasProperty"><a href="https://tc39.es/ecma262/#sec-hasproperty">HasProperty</a></emu-xref>(<var>result</var>, <emu-val>"value"</emu-val>) is <emu-val>true</emu-val>, then<ol><li>Let <var>valueValue</var> be ?&nbsp;<emu-xref aoid="Get"><a href="https://tc39.es/ecma262/#sec-get-o-p">Get</a></emu-xref>(<var>result</var>, <emu-val>"value"</emu-val>).</li><li>Return <emu-xref aoid="CreateIteratorResultObject"><a href="https://tc39.es/ecma262/#sec-createiterresultobject">CreateIteratorResultObject</a></emu-xref>(<var>valueValue</var>, <emu-val>false</emu-val>).</li></ol></li><li>Else,<ol><li>Return <emu-xref aoid="CreateIteratorResultObject"><a href="https://tc39.es/ecma262/#sec-createiterresultobject">CreateIteratorResultObject</a></emu-xref>(<emu-val>undefined</emu-val>, <emu-val>false</emu-val>).</li></ol></li></ol></li><li>Else,<ol><li>Return <emu-xref aoid="CreateIteratorResultObject"><a href="https://tc39.es/ecma262/#sec-createiterresultobject">CreateIteratorResultObject</a></emu-xref>(<emu-val>undefined</emu-val>, <emu-val>true</emu-val>).</li></ol></li></ol></emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-%resultiteratorprototype%-@@toStringTag">
+        <h1><span class="secnum">1.4.2.2</span> %ResultIteratorPrototype% [ %Symbol.toStringTag% ]</h1>
+        <p>The initial value of the <emu-xref href="#sec-well-known-symbols"><a href="https://tc39.es/ecma262/#sec-well-known-symbols">%Symbol.toStringTag%</a></emu-xref> property is the String value <emu-val>"Result Iterator"</emu-val>.</p>
+        <p>This property has the attributes { <var class="field">[[Writable]]</var>: <emu-val>false</emu-val>, <var class="field">[[Enumerable]]</var>: <emu-val>false</emu-val>, <var class="field">[[Configurable]]</var>: <emu-val>true</emu-val> }.</p>
+      </emu-clause>
+    </emu-clause>
   </emu-clause>
 </emu-clause>
 
-<emu-clause id="sec-well-known-intrinsic-objects">
-  <h1><span class="secnum">2</span> Well-Known Intrinsic Objects</h1>
-  <emu-table id="table-well-known-intrinsic-objects" caption="Well-Known Intrinsic Objects" oldids="table-7"><figure><figcaption>Table 1: Well-Known Intrinsic Objects</figcaption><span id="table-7"></span>
-    <table>
-      <thead>
-        <tr>
-          <th>
-            Intrinsic Name
-          </th>
-          <th>
-            Global Name
-          </th>
-          <th>
-            ECMAScript Language Association
-          </th>
-        </tr>
-      </thead>
-      <tbody><tr>
-        <td>
-          <emu-xref href="#sec-result-constructor" id="_ref_8"><a href="#sec-result-constructor">%Result%</a></emu-xref>
-        </td>
-        <td>
-          <code>Result</code>
-        </td>
-        <td>
-          The <code>Result</code> <emu-xref href="#constructor"><a href="https://tc39.es/ecma262/#constructor">constructor</a></emu-xref> (<emu-xref href="#sec-result-constructor" id="_ref_0"><a href="#sec-result-constructor">3</a></emu-xref>)
-        </td>
-      </tr>
-    </tbody></table>
-  </figure></emu-table>
+<emu-clause id="sec-try-operator">
+  <h1><span class="secnum">2</span> The Try Operator</h1>
+
+  <emu-clause id="sec-try-operator-runtime-semantics">
+    <h1><span class="secnum">2.1</span> Runtime Semantics</h1>
+
+    <emu-clause id="sec-try-operator-static-semantics">
+      <h1><span class="secnum">2.1.1</span> Static Semantics</h1>
+      <emu-grammar><emu-production name="UnaryExpression" params="Yield, Await">
+    <emu-nt params="Yield, Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[Yield, Await]</emu-params></emu-mods></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="3ass0nht">
+        <emu-t>try</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+</emu-production>
+</emu-grammar>
+    </emu-clause>
+
+    <emu-clause id="sec-try-operator-evaluation" type="sdo">
+      <h1><span class="secnum">2.1.2</span> Runtime Semantics: Evaluation</h1>
+      <emu-grammar><emu-production name="UnaryExpression" collapsed="">
+    <emu-nt><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="rb7murt9">
+        <emu-t>try</emu-t>
+        <emu-nt><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a></emu-nt>
+    </emu-rhs>
+</emu-production>
+</emu-grammar>
+      <emu-alg><ol><li>Let <var>exprRef</var> be <emu-xref aoid="Completion"><a href="https://tc39.es/ecma262/#sec-completion-ao">Completion</a></emu-xref>(<emu-xref aoid="Evaluation"><a href="https://tc39.es/ecma262/#sec-evaluation">Evaluation</a></emu-xref> of <emu-nt><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a></emu-nt>).</li><li>If <var>exprRef</var> is an <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">abrupt completion</a></emu-xref>, then<ol><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.error%, %Result%, « <var>exprRef</var>.<var class="field">[[Value]]</var>&nbsp;»).</li></ol></li><li>Let <var>value</var> be <emu-xref aoid="Completion"><a href="https://tc39.es/ecma262/#sec-completion-ao">Completion</a></emu-xref>(<emu-xref aoid="GetValue"><a href="https://tc39.es/ecma262/#sec-getvalue">GetValue</a></emu-xref>(<var>exprRef</var>)).</li><li>If <var>value</var> is an <emu-xref href="#sec-completion-record-specification-type"><a href="https://tc39.es/ecma262/#sec-completion-record-specification-type">abrupt completion</a></emu-xref>, then<ol><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.error%, %Result%, « <var>value</var>.<var class="field">[[Value]]</var>&nbsp;»).</li></ol></li><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.ok%, %Result%, « <var>value</var>.<var class="field">[[Value]]</var>&nbsp;»).</li></ol></emu-alg>
+    </emu-clause>
+  </emu-clause>
+
+  <emu-clause id="sec-try-operator-await-interaction">
+    <h1><span class="secnum">2.2</span> Interaction with Await</h1>
+    <p>When the try operator is used with await, it captures both synchronous exceptions and asynchronous rejections.</p>
+
+    <emu-grammar><emu-production name="UnaryExpression" collapsed="">
+    <emu-nt><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="lfjtfr_c">
+        <emu-t>try</emu-t>
+        <emu-t>await</emu-t>
+        <emu-nt><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a></emu-nt>
+    </emu-rhs>
+</emu-production>
+</emu-grammar>
+    <emu-alg><ol><li>Let <var>exprRef</var> be the result of evaluating <emu-nt><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a></emu-nt>.</li><li>Let <var>value</var> be ?&nbsp;<emu-xref aoid="GetValue"><a href="https://tc39.es/ecma262/#sec-getvalue">GetValue</a></emu-xref>(<var>exprRef</var>).</li><li>Let <var>promise</var> be ?&nbsp;<emu-xref aoid="PromiseResolve"><a href="https://tc39.es/ecma262/#sec-promise-resolve">PromiseResolve</a></emu-xref>(<emu-xref href="#sec-promise-constructor"><a href="https://tc39.es/ecma262/#sec-promise-constructor">%Promise%</a></emu-xref>, <var>value</var>).</li><li>Let <var>fulfillmentHandler</var> be a new <emu-xref href="#sec-abstract-closure"><a href="https://tc39.es/ecma262/#sec-abstract-closure">Abstract Closure</a></emu-xref> with parameters (<var>value</var>) that captures nothing and performs the following steps when called:<ol><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.ok%, %Result%, « <var>value</var>&nbsp;»).</li></ol></li><li>Let <var>rejectionHandler</var> be a new <emu-xref href="#sec-abstract-closure"><a href="https://tc39.es/ecma262/#sec-abstract-closure">Abstract Closure</a></emu-xref> with parameters (<var>reason</var>) that captures nothing and performs the following steps when called:<ol><li>Return !&nbsp;<emu-xref aoid="Call"><a href="https://tc39.es/ecma262/#sec-call">Call</a></emu-xref>(%Result.error%, %Result%, « <var>reason</var>&nbsp;»).</li></ol></li><li>Let <var>promiseFulfill</var> be <emu-xref aoid="CreateBuiltinFunction"><a href="https://tc39.es/ecma262/#sec-createbuiltinfunction">CreateBuiltinFunction</a></emu-xref>(<var>fulfillmentHandler</var>, 1, <emu-val>""</emu-val>, «&nbsp;»).</li><li>Let <var>promiseReject</var> be <emu-xref aoid="CreateBuiltinFunction"><a href="https://tc39.es/ecma262/#sec-createbuiltinfunction">CreateBuiltinFunction</a></emu-xref>(<var>rejectionHandler</var>, 1, <emu-val>""</emu-val>, «&nbsp;»).</li><li>Return ?&nbsp;<emu-xref aoid="Await"><a href="https://tc39.es/ecma262/#await">Await</a></emu-xref>(<emu-xref aoid="PerformPromiseThen"><a href="https://tc39.es/ecma262/#sec-performpromisethen">PerformPromiseThen</a></emu-xref>(<var>promise</var>, <var>promiseFulfill</var>, <var>promiseReject</var>)).</li></ol></emu-alg>
+  </emu-clause>
 </emu-clause>
 
-<emu-clause id="sec-result-constructor">
-  <h1><span class="secnum">3</span> The Result Constructor</h1>
-  <p>The Result <emu-xref href="#constructor"><a href="https://tc39.es/ecma262/#constructor">constructor</a></emu-xref>:</p>
-  <ul>
-    <li>is <dfn variants="Result" tabindex="-1">%Result%</dfn>.</li>
-    <li>is the initial value of the <emu-val>"Result"</emu-val> property of the <emu-xref href="#sec-global-object"><a href="https://tc39.es/ecma262/#sec-global-object">global object</a></emu-xref>.</li>
-    <li>is the functional equivelant of the following code:
-      <pre><code class="javascript hljs"><span class="hljs-keyword">class</span> <span class="hljs-title class_">Result</span> {
-  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">ok, error, value</span>) {
-    <span class="hljs-variable language_">this</span>.<span class="hljs-property">ok</span> = ok
-    <span class="hljs-variable language_">this</span>.<span class="hljs-property">error</span> = error
-    <span class="hljs-variable language_">this</span>.<span class="hljs-property">value</span> = value
-  }
-  *[<span class="hljs-title class_">Symbol</span>.<span class="hljs-property">iterator</span>]() {
-    <span class="hljs-keyword">yield</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">ok</span>
-    <span class="hljs-keyword">yield</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">error</span>
-    <span class="hljs-keyword">yield</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">value</span>
-  }
-  <span class="hljs-keyword">static</span> <span class="hljs-title function_">ok</span>(<span class="hljs-params">value</span>) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Result</span>(<span class="hljs-literal">true</span>, <span class="hljs-literal">undefined</span>, value)
-  }
-  <span class="hljs-keyword">static</span> <span class="hljs-title function_">error</span>(<span class="hljs-params">error</span>) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Result</span>(<span class="hljs-literal">false</span>, error, <span class="hljs-literal">undefined</span>)
-  }
-}</code></pre>
-    </li>
-  </ul>
-</emu-clause><emu-annex id="sec-copyright-and-software-license">
-      <h1><span class="secnum">A</span> Copyright &amp; Software License</h1>
+<emu-clause id="sec-syntax-directed-operations">
+  <h1><span class="secnum">3</span> Syntax-Directed Operations</h1>
+
+  <emu-clause id="sec-isvalidsimpleassignmenttarget" type="sdo">
+    <h1><span class="secnum">3.1</span> Static Semantics: IsValidSimpleAssignmentTarget</h1>
+    <emu-grammar><emu-production name="UnaryExpression" collapsed="">
+    <emu-nt><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="rb7murt9">
+        <emu-t>try</emu-t>
+        <emu-nt><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a></emu-nt>
+    </emu-rhs>
+</emu-production>
+</emu-grammar>
+    <emu-alg><ol><li>Return <emu-val>false</emu-val>.</li></ol></emu-alg>
+  </emu-clause>
+</emu-clause>
+
+<emu-annex id="sec-grammar-summary">
+  <h1><span class="secnum">A</span> Grammar Summary</h1>
+
+  <emu-annex id="sec-expressions">
+    <h1><span class="secnum">A.1</span> Expressions</h1>
+
+    <emu-prodref name="UnaryExpression"></emu-prodref>
+    <emu-grammar><emu-production name="UnaryExpression" params="Yield, Await">
+    <emu-nt params="Yield, Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[Yield, Await]</emu-params></emu-mods></emu-nt> <emu-geq>:</emu-geq> <emu-rhs a="lrh_izya">
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UpdateExpression">UpdateExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+    <emu-rhs a="qh6tas2i">
+        <emu-t>delete</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+    <emu-rhs a="d3t3dyzd">
+        <emu-t>void</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+    <emu-rhs a="atfv1ezt">
+        <emu-t>typeof</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+    <emu-rhs a="1zx-fkm3">
+        <emu-t>+</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+    <emu-rhs a="lehvx30i">
+        <emu-t>-</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+    <emu-rhs a="mvwftuyy">
+        <emu-t>~</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+    <emu-rhs a="cm7fnuig">
+        <emu-t>!</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+    <ins><emu-rhs a="3ass0nht">
+        <emu-t>try</emu-t>
+        <emu-nt params="?Yield, ?Await"><a href="https://tc39.es/ecma262/#prod-UnaryExpression">UnaryExpression</a><emu-mods><emu-params>[?Yield, ?Await]</emu-params></emu-mods></emu-nt>
+    </emu-rhs></ins>
+    <emu-rhs a="dfqdbsrx" constraints="+Await"><emu-constraints>[+Await]</emu-constraints>
+        <emu-nt params="?Yield"><a href="https://tc39.es/ecma262/#prod-AwaitExpression">AwaitExpression</a><emu-mods><emu-params>[?Yield]</emu-params></emu-mods></emu-nt>
+    </emu-rhs>
+</emu-production>
+</emu-grammar>
+  </emu-annex>
+</emu-annex><emu-annex id="sec-copyright-and-software-license">
+      <h1><span class="secnum">B</span> Copyright &amp; Software License</h1>
       
       <h2>Copyright Notice</h2>
       <p>© 2025 Arthur Fiorette, Arlen Beiler</p>
@@ -3427,5 +3536,4 @@ emu-intro {
 
 <p>THIS SOFTWARE IS PROVIDED BY THE ECMA INTERNATIONAL "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ECMA INTERNATIONAL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 
-    </emu-annex>
-</div></body>
+    </emu-annex></div></body>
