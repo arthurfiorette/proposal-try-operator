@@ -545,7 +545,7 @@ For a more in-depth explanation of this decision, refer to [GitHub Issue #30](ht
 
 ## A Case for Syntax
 
-This proposal intentionally combines the `try` operator with the `Result` class because one is incomplete without the other. A standard `Result` class is valuable on its own, as it would unify the countless `Result` and `Option` type implementations that currently fragment the ecosystem. Consistency is key, and a built-in type would establish a common pattern for all developers.
+This proposal intentionally combines the `try` operator with the `Result` class because one is imcomplete without the other. The `try` operator standardizes the many attempts at safely catching synchronous function calls (the way we can with Promise `.catch` for async calls). Consistency is key, and the `try` syntax establishes common patterns for all developers.
 
 It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
 
@@ -557,7 +557,7 @@ Without the `try` operator, the `Result` class is just one of many possible libr
 
 A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
 
-The absence of a standard `Result` type has led to widespread ecosystem fragmentation. The NPM registry contains hundreds of variations, and countless more exist as private, copy-pasted utilities. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
+The absence of a `Result`-like type and a standard pattern for safely wrapping function calls has led to widespread ecosystem fragmentation. The NPM registry contains hundreds of variations attempting to implement safe wrapping of function calls, and countless more exist as private, copy-pasted utilities. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
 
 This is the same problem that optional chaining (`?.`) and nullish coalescing (`??`) solved. **They replaced a landscape of competing utilities with a single, trusted language feature**. By standardizing this pattern, we provide a reliable primitive that developers can use with confidence, knowing it is a stable and permanent part of JavaScript. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
 
