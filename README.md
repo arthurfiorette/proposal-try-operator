@@ -559,7 +559,9 @@ A proposal doesn’t need to introduce a feature that is entirely impossible to 
 
 The absence of a `Result`-like type and a standard pattern for safely wrapping function calls has led to widespread ecosystem fragmentation. The NPM registry contains hundreds of variations attempting to implement safe wrapping of function calls, and countless more exist as private, copy-pasted utilities. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
 
-This is the same problem that optional chaining (`?.`) and nullish coalescing (`??`) solved. **They replaced a landscape of competing utilities with a single, trusted language feature**. By standardizing this pattern, we provide a reliable primitive that developers can use with confidence, knowing it is a stable and permanent part of JavaScript. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
+This is the same problem that optional chaining (`?.`) and nullish coalescing (`??`) solved. **They replaced a landscape of competing utilities with a single, trusted language feature**. By standardizing this pattern, we provide a reliable primitive that developers can use with confidence, knowing it is a stable and permanent part of JavaScript.
+
+It also creates a shared foundation between developers and package authors. Everyone can rely on the same Result implementation without compatibility concerns. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
 
 <br />
 
