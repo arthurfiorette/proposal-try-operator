@@ -73,7 +73,7 @@ contributors: Arthur Fiorette, Arlen Beiler
     </h1>
     <dl class="header">
       <dt>description</dt>
-      <dd>It is the abstract equivelant of calling `Result.ok(value)`</dd>
+      <dd>It is the abstract equivalent of calling `Result.ok(value)`</dd>
     </dl>
   </emu-clause>
   <emu-clause id="sec-try-expression-result-error" type="abstract operation">
@@ -84,7 +84,7 @@ contributors: Arthur Fiorette, Arlen Beiler
     </h1>
     <dl class="header">
       <dt>description</dt>
-      <dd>It is the abstract equivelant of calling `Result.error(value)`</dd>
+      <dd>It is the abstract equivalent of calling `Result.error(value)`</dd>
     </dl>
   </emu-clause>
 </emu-clause>
