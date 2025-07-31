@@ -118,7 +118,7 @@ class Result {
     try {
       let result;
       if (/* IsCallable(arg) */typeof arg === "function") {
-        result = arg.call(undefined, args)
+        result = arg.apply(undefined, args)
       } else {
         result = arg;
       }
