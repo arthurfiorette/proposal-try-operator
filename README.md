@@ -240,7 +240,7 @@ array.map(fn => try fn())
 // yields Result
 yield try something()
 
-// Result<T> where T is the argument of iterator().next(T) but also captures
+// Result<T> where T is the argument of iterator().next(arg: T) but also captures
 // any error thrown by something()
 try yield something()
 
