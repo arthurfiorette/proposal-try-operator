@@ -240,7 +240,8 @@ array.map(fn => try fn())
 // yields Result
 yield try something()
 
-// Result<T> where T is return type of iterator().next()
+// Result<T> where T is the argument of iterator().next(T) but also captures
+// any error thrown by something()
 try yield something()
 
 // Result<Awaited<ReturnType<typeof something>>>
