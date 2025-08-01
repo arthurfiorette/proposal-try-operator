@@ -225,16 +225,36 @@ All of its usages are just a combination of the above said rules.
 </summary>
 
 ```js
+// wraps the result of `something()` in a Result
 const a = try something()
-const [[ok, err, val]] = [try something()]
+
+// Result is iterable
 const [ok, err, val] = try something()
-array.map(fn => try fn()) // Result[]
-yield try something() // yields Result
-try yield something() // Result<T> where T is iterator().next(T)
-try await something() // Result<Awaited<T>>
-try (a instanceof b) // catches TypeError: Right-hand side of 'instanceof' is not an object
+
+// Result still is iterable
+const [[ok, err, val]] = [try something()]
+
+// Result[]
+array.map(fn => try fn())
+
+// yields Result
+yield try something()
+
+// Result<T> where T is the argument of iterator().next(arg: T) but also captures
+// any error thrown by something()
+try yield something()
+
+// Result<Awaited<ReturnType<typeof something>>>
+try await something()
+
+// catches TypeError: Right-hand side of 'instanceof' is not an object
+try (a instanceof b)
+
+// Result<boolean> instanceof boolean
 (try a) instanceof Result
-const a = try (try (try (try (try 1)))) // Result<Result<Result<Result<Result<number>>>
+
+// Result<Result<Result<Result<Result<number>>>
+const a = try (try (try (try (try 1))))
 ```
 
 </details>
