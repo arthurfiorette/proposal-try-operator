@@ -226,7 +226,7 @@ function work(): Result<number>
 function work(): { ok: boolean; value?: number; error?: Error }
 ```
 
-Both are callee-level error handling, the pattern the [Caller's Approach](#callers-approach) section argues against. Functions should throw errors and let callers decide how to handle them.
+Both are callee-level error handling, which the [Caller's Approach](#callers-approach) section argues against. Functions should throw errors and let callers decide how to handle them.
 
 If you encounter an API that returns `Result`, that API is misusing this proposal. Use its `Result` directly. Wrapping it in `try` is redundant since the API states it handles errors internally.
 
