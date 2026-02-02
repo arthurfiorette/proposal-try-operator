@@ -25,6 +25,7 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
 - [Authors](#authors)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Caller's Approach](#callers-approach)
+- [Result Is for Callers](#result-is-for-callers)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
   - [Can be inlined.](#can-be-inlined)
@@ -40,7 +41,6 @@ Only the `catch (error) {}` block represents actual control flow, while no progr
   - [Iterable Protocol](#iterable-protocol)
   - [Manual Creation](#manual-creation)
   - [`try()` static method](#try-static-method)
-  - [No Result Flattening](#no-result-flattening)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
   - [Type-Safe Errors](#type-safe-errors)
   - [Automatic Error Handling](#automatic-error-handling)
@@ -214,6 +214,28 @@ Ironically, **these are precisely the kinds of functions where improved error ha
 
 <br />
 
+## Result Is for Callers
+
+The `Result` class and `try` operator are tools for callers to wrap `throw`-based code. APIs should not return `Result` objects.
+
+```ts
+// Returning a Result object
+function work(): Result<number>
+
+// Is no different than the above callee's example
+function work(): { ok: boolean; value?: number; error?: Error }
+```
+
+Both are callee-level error handling, which the [Caller's Approach](#callers-approach) section argues against. Functions should throw errors and let callers decide how to handle them.
+
+If you encounter an API that returns `Result`, that API is misusing this proposal. Use its `Result` directly. Wrapping it in `try` is redundant since the API states it handles errors internally.
+
+To discourage this pattern, **Results are intentionally not flattened**.
+
+For further discussion, see [GitHub Issue #92](https://github.com/arthurfiorette/proposal-try-operator/issues/92).
+
+<br />
+
 ## Try Operator
 
 The `try` operator consists of the `try` keyword followed by an expression. It results in an instance of the [`Result`](#result-class).
@@ -297,7 +319,7 @@ This is "equivalent" to:
 let _result
 try {
   _result = Result.ok(
-    data?.someProperty.anotherFunction?.(await someData()).andAnotherOne()
+    data?.someProperty.anotherFunction?.(await someData()).andAnotherOne(),
   )
 } catch (error) {
   _result = Result.error(error)
@@ -466,12 +488,6 @@ const failure = Result.error(new Error("Operation failed"))
 It also includes a static `Result.try()` method, which serves as the runtime foundation for the `try` operator. This method wraps a function call, catching any synchronous exceptions or asynchronous rejections and returning a `Result` or `Promise<Result>`, respectively.
 
 The proposed `try expression` syntax is essentially an ergonomic improvement over the more verbose `Result.try(() => expression)`, removing the need for a function wrapper.
-
-### No Result Flattening
-
-The `try` operator and `Result` constructors wrap the value they are given without inspection. If this value is itself a `Result` instance, it will be nested, not flattened. This ensures predictable and consistent behavior.
-
-<br />
 
 ## What This Proposal Does Not Aim to Solve
 
