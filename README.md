@@ -218,24 +218,12 @@ Ironically, **these are precisely the kinds of functions where improved error ha
 
 The `Result` class and `try` operator are tools for callers to wrap `throw`-based code. APIs should not return `Result` objects.
 
-```js
+```ts
 // Returning a Result object
-function work() {
-  try {
-    return Result.ok(value) // or return myResult;
-  } catch (error) {
-    return Result.error(error)
-  }
-}
+function work(): Result<number>
 
-// Has the same flaw as returning a plain object
-function work() {
-  try {
-    return { ok: true, value }
-  } catch (error) {
-    return { ok: false, error }
-  }
-}
+// Is no different than the above callee's example
+function work(): { ok: boolean; value?: number; error?: Error }
 ```
 
 Both are callee-level error handling, the pattern the [Caller's Approach](#callers-approach) section argues against. Functions should throw errors and let callers decide how to handle them.
