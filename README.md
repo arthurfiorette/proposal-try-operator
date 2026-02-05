@@ -19,7 +19,7 @@ This proposal addresses the ergonomic challenges of managing multiple, often nes
 
 The try block needlessly encloses the protected code in a block. This prevents const assignments and breaks readability in other ways. Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
-The solution is to add a `try <expression>` operator, similar to `await <expression>`, which catches any error that occurs when executing its expression and returns the error to the caller. 
+The solution is to add a `try <expression>` operator, a syntax similar to `await <expression>`, which catches any error that occurs when executing its expression and returns the error to the caller. 
 
 The try operator has no existing equivalent, since it allows error handling without crossing block or function boundaries. 
 
