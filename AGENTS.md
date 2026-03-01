@@ -1,6 +1,6 @@
 ## Purpose
 
-This repository contains a **Stage 0 ECMAScript proposal** for a `try` operator.
+This repository contains a proposal for a `try` operator.
 
 AI assistance should be used primarily as a critical thinking partner, not as an automatic writer that simply agrees with the current direction.
 
