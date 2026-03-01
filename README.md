@@ -29,7 +29,7 @@ The try operator has no existing equivalent, since it allows error handling with
 - [Authors](#authors)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
 - [Caller's Approach](#callers-approach)
-- [Result Is for Callers](#result-is-for-callers)
+- [Result as a Return Type](#result-as-a-return-type)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
   - [Can be inlined.](#can-be-inlined)
@@ -39,6 +39,7 @@ The try operator has no existing equivalent, since it allows error handling with
   - [Never throws](#never-throws)
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Void Operations](#void-operations)
+  - [No Flattening](#no-flattening)
 - [Result Class](#result-class)
   - [Reference Implementation](#reference-implementation)
   - [Instance Structure](#instance-structure)
@@ -218,23 +219,43 @@ Ironically, **these are precisely the kinds of functions where improved error ha
 
 <br />
 
-## Result Is for Callers
+## Result as a Return Type
 
-The `Result` class and `try` operator are tools for callers to wrap `throw`-based code. APIs should not return `Result` objects.
+One of the Result principles is to wrap at the top, not throughout the stack. Returning `Result` from functions is possible, but often unnecessary.
 
-```ts
-// Returning a Result object
-function work(): Result<number>
+Consider a call chain where `getUser()` calls `db.select()`, which calls `db.connect()`. If none return `Result`, the caller can simply write:
 
-// Is no different than the above callee's example
-function work(): { ok: boolean; value?: number; error?: Error }
+```js
+const [ok, error, user] = try getUser(id)
 ```
 
-Both are callee-level error handling, which the [Caller's Approach](#callers-approach) section argues against. Functions should throw errors and let callers decide how to handle them.
+This single `try` captures any error thrown anywhere in the chain. Compare this to returning `Result` throughout the stack:
 
-If you encounter an API that returns `Result`, that API is misusing this proposal. Use its `Result` directly. Wrapping it in `try` is redundant since the API states it handles errors internally.
+```js
+// Every function must check and forward errors.
 
-To discourage this pattern, **Results are intentionally not flattened**.
+function getUser(id) {
+  const connResult = db.connect()
+
+  if (!connResult.ok) {
+    return connResult
+  }
+
+  const userResult = db.select(connResult.value, id)
+
+  if (!userResult.ok) {
+    return userResult
+  }
+
+  return Result.ok(normalize(userResult.value))
+}
+```
+
+`Result`-returning functions cannot be freely composed with `throw`-based functions without explicit unwrapping at each boundary. This repetitive `if (!result.ok) { return result }` forwarding is reminiscent of Go's `if err != nil { return err }`. [Rob Pike's "Errors are values"](https://go.dev/blog/errors-are-values) addresses this: the solution is not more syntax sugar _(a `try?`-like operator)_, but recognizing that errors are values that can be programmed creatively. In many cases, this repetition is a useful signal that the code may benefit from restructuring rather than new syntax.
+
+Returning `Result` can force callers to acknowledge errors in ways JSDoc cannot. However, the function coloring tradeoff often outweighs this benefit. When acknowledgement is not required, a single `try` at the top of the call stack achieves the same safety without coloring every function in the chain.
+
+The `try` operator is designed to coexist with `throw`, not replace it. Following the [caller's approach](#callers-approach), functions typically throw and let callers decide how to handle errors. Returning `Result` can still make sense when forcing acknowledgement is more important than composability.
 
 For further discussion, see [GitHub Issue #92](https://github.com/arthurfiorette/proposal-try-operator/issues/92).
 
@@ -429,6 +450,12 @@ function work() {
   void try fs.unlinkSync("temp.txt")
 }
 ```
+
+### No Flattening
+
+Wrapping a `Result`-returning function with `try` yields `Result<Result<T>>`, not a flattened `Result<T>`. This signals that either `try` is unnecessary _(the callee already returns `Result`)_, or there is a contract mismatch in the callee _(for example, it declares `Result` but might throw)_.
+
+If this becomes a pain point, future proposals could introduce `Result.flatten()` or `.unwrap()` methods. By contrast, automatic flattening would be difficult to remove later without compatibility risk.
 
 <br />
 
