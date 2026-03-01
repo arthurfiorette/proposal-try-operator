@@ -221,7 +221,7 @@ Ironically, **these are precisely the kinds of functions where improved error ha
 
 ## Result as a Return Type
 
-One of the Result principles is to wrap at the top, not throughout the stack. Returning `Result` from functions is possible, but often unnecessary.
+One of the `Result` principles is to wrap at the top, not throughout the stack. Returning `Result` from functions is possible, but often unnecessary.
 
 Consider a call chain where `getUser()` calls `db.select()`, which calls `db.connect()`. If none return `Result`, the caller can simply write:
 
