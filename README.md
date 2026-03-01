@@ -19,9 +19,9 @@ This proposal addresses the ergonomic challenges of managing multiple, often nes
 
 The try block needlessly encloses the protected code in a block. This prevents const assignments and breaks readability in other ways. Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
 
-The solution is to add a `try <expression>` operator, a syntax similar to `await <expression>`, which catches any error that occurs when executing its expression and returns the error to the caller. 
+The solution is to add a `try <expression>` operator, a syntax similar to `await <expression>`, which catches any error that occurs when executing its expression and returns the error to the caller.
 
-The try operator has no existing equivalent, since it allows error handling without crossing block or function boundaries. 
+The try operator has no existing equivalent, since it allows error handling without crossing block or function boundaries.
 
 <br />
 
@@ -78,7 +78,7 @@ _For more information see the [TC39 proposal process](https://tc39.es/process-do
 
 <!-- Credits to https://x.com/LeaVerou/status/1819381809773216099 -->
 
-The `try {}` block often feels redundant because its scoping lacks meaningful conceptual significance. Rather than serving as an essential control flow construct, it mostly acts as a code annotation. Unlike loops or conditionals, a `try {}` block doesn’t encapsulate any distinct program state that requires isolation.
+The `try {}` block introduces additional block scoping around non-exceptional flow. Unlike loops or conditionals, it does not represent a distinct program state that must be isolated.
 
 On the other hand, the `catch {}` block **is** genuine control flow, making its scoping relevant. According to Oxford Languages, an exception is defined as:
 
@@ -135,7 +135,7 @@ function getPostInfo(session, postSlug, cache, db) {
 }
 ```
 
-The `try` blocks didn't provide much value beyond introducing unnecessary nesting.
+In this example, the `try` blocks primarily introduce additional nesting.
 
 Instead, using the proposed `try` operator simplifies the function:
 
@@ -208,11 +208,11 @@ With that in mind, improvements in error handling can be approached in two ways:
    }
    ```
 
-Both approaches achieve the same goal, but the second one requires refactoring all implementations into a new format. This is how languages like Go and Rust handle errors, returning a tuple of an error and a value or a `Result` object, respectively. While the callee-based approach can arguably be better, it succeeded in those languages because it was adopted from the very beginning, rather than introduced as a later addition.
+Both approaches achieve the same goal, but the second one requires refactoring implementations into a new format. Languages like Go and Rust use callee-level result values from the start. Introducing that model later in JavaScript has a different compatibility and adoption profile.
 
 This proposal accounts for this by moving the transformation of errors into values to the **caller** level, preserving the familiar semantics and placement of `try/catch`. This approach ensures backward compatibility with existing code.
 
-Breaking compatibility is unacceptable for platforms like Node.js or libraries. Consequently, a callee-based approach would likely never be adopted for functions like `fetch` or `fs.readFile`, as it would disrupt existing codebases.
+For platforms like Node.js and widely used libraries, compatibility costs are high. As a result, a callee-based transition for APIs like `fetch` or `fs.readFile` is unlikely in practice because it would require broad refactoring across existing codebases.
 
 Ironically, **these are precisely the kinds of functions where improved error handling is most needed**.
 
@@ -517,7 +517,7 @@ In Go, the convention is to place the data variable first, and you might wonder 
 
 If someone is using a `try` statement, it is because they want to ensure they handle errors and avoid neglecting them. Placing the data first would undermine this principle by prioritizing the result over error handling.
 
-```ts
+```js
 // This line doesn't acknowledge the possibility of errors being thrown
 const data = fn()
 
@@ -530,7 +530,7 @@ const [ok, error, data] = try fn()
 
 If you want to suppress the error (which is **different** from ignoring the possibility of a function throwing an error), you can do the following:
 
-```ts
+```js
 // This suppresses a possible error (Ignores and doesn't re-throw)
 const [ok, , data] = try fn()
 ```
@@ -539,7 +539,7 @@ This approach is explicit and readable, as it acknowledges the possibility of an
 
 The above method, often referred to as "try-catch calaboca" (a Brazilian term), can also be written as:
 
-```ts
+```js
 let ok = true
 let data
 try {
@@ -585,7 +585,7 @@ For a more in-depth explanation of this decision, refer to [GitHub Issue #30](ht
 
 ## A Case for Syntax
 
-This proposal intentionally combines the `try` operator with the `Result` class because one is incomplete without the other. The `try` operator standardizes the many attempts at safely catching synchronous function calls (the way we can with Promise `.catch` for async calls). Consistency is key, and the `try` syntax establishes common patterns for all developers.
+This proposal intentionally combines the `try` operator with the `Result` class because each part motivates the other. The `try` operator standardizes a common pattern for safely catching synchronous function calls (similar to how Promise `.catch` handles async rejections).
 
 It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
 
@@ -599,7 +599,7 @@ A proposal doesn’t need to introduce a feature that is entirely impossible to 
 
 The absence of a `Result`-like type and a standard pattern for safely wrapping function calls has led to widespread ecosystem fragmentation. The NPM registry contains hundreds of variations attempting to implement safe wrapping of function calls, and countless more exist as private, copy-pasted utilities. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
 
-This is the same problem that optional chaining (`?.`) and nullish coalescing (`??`) solved. **They replaced a landscape of competing utilities with a single, trusted language feature**. By standardizing this pattern, we provide a reliable primitive that developers can use with confidence, knowing it is a stable and permanent part of JavaScript.
+This is similar to the ecosystem pressure that preceded optional chaining (`?.`) and nullish coalescing (`??`), where many userland utilities addressed the same recurring problem. Standardizing this pattern aims to provide a stable shared primitive for JavaScript.
 
 It also creates a shared foundation between developers and package authors. Everyone can rely on the same Result implementation without compatibility concerns. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
 
