@@ -127,12 +127,12 @@ function getPostInfo(session, postSlug, cache, db) {
     } catch (error) {
       otel.capture(error, Operations.JOIN_POST_COMMENTS)
     }
+
+    return { post, comments }
   } catch (error) {
     otel.capture(error, Operations.GET_POST)
     throw new Error("Could not get post")
   }
-
-  return { post, comments }
 }
 ```
 
@@ -568,7 +568,7 @@ const [ok, , data] = try fn()
 
 This approach is explicit and readable, as it acknowledges the possibility of an error while indicating that you do not care about it.
 
-The above method, often referred to as "try-catch calaboca" (a Brazilian term), can also be written as:
+The above method, can also be written as:
 
 ```js
 let ok = true
@@ -651,6 +651,7 @@ This proposal is in its early stages, and we welcome your input to help refine i
 - [Effect TS Error Management](https://effect.website/docs/error-management/two-error-types/)
 - The [`tuple-it`](https://www.npmjs.com/package/tuple-it) npm package, which introduces a similar concept but modifies the `Promise` and `Function` prototypes.
 - [Szymon Wygnański](https://finalclass.net) for donating the `try` package name on NPM to host the reference implementation of this proposal.
+- The [first concept](https://github.com/arthurfiorette/proposal-try-operator/tree/old/proposal-safe-assignment-operator) of this proposal, called "Safe Assignment Operator".
 
 <br />
 
