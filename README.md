@@ -257,6 +257,8 @@ Returning `Result` can force callers to acknowledge errors in ways JSDoc cannot.
 
 The `try` operator is designed to coexist with `throw`, not replace it. Following the [caller's approach](#callers-approach), functions typically throw and let callers decide how to handle errors. Returning `Result` can still make sense when forcing acknowledgement is more important than composability.
 
+Mixed patterns (`Result` return + `throw`) may exist in practice, but this proposal treats them as unusual boundaries rather than the default composition path (see [No Flattening](#no-flattening)).
+
 For further discussion, see [GitHub Issue #92](https://github.com/arthurfiorette/proposal-try-operator/issues/92).
 
 <br />
@@ -453,7 +455,9 @@ function work() {
 
 ### No Flattening
 
-Wrapping a `Result`-returning function with `try` yields `Result<Result<T>>`, not a flattened `Result<T>`. This signals that either `try` is unnecessary _(the callee already returns `Result`)_, or there is a contract mismatch in the callee _(for example, it declares `Result` but might throw)_.
+Wrapping a `Result`-returning function with `try` yields `Result<Result<T>>`, not a flattened `Result<T>`.
+
+This is intentional. Functions that return `Result` and also throw do exist in practice, but this proposal does not optimize for that pattern. The nested shape marks an unusual boundary: either `try` is unnecessary _(the callee already returns `Result`)_, or the callee contract is mismatched _(for example, it declares `Result<T>` but might throw)_. The rationale is not that `Result`-returning functions can never throw; it is that the operator should not silently normalize mixed channels.
 
 If this becomes a pain point, future proposals could introduce `Result.flatten()` or `.unwrap()` methods. By contrast, automatic flattening would be difficult to remove later without compatibility risk.
 
