@@ -255,7 +255,7 @@ function getUser(id) {
 
 Returning `Result` can force callers to acknowledge errors in ways JSDoc cannot. However, the function coloring tradeoff often outweighs this benefit. When acknowledgement is not required, a single `try` at the top of the call stack achieves the same safety without coloring every function in the chain.
 
-The `try` operator is designed to coexist with `throw`, not replace it. Following the [caller's approach](#callers-approach), functions typically throw and let callers decide how to handle errors. Returning `Result` can still make sense when forcing acknowledgement is more important than composability.
+The `try` operator is designed to coexist with `throw`, not replace it. Following the [caller's approach](#callers-approach), functions typically throw and let callers decide how to handle errors. Returning `Result` can still make sense when forcing acknowledgement is more important than minimizing cross-boundary error-conversion boilerplate.
 
 Mixed patterns (`Result` return + `throw`) may exist in practice, but this proposal treats them as unusual boundaries rather than the default composition path (see [No Flattening](#no-flattening)).
 
