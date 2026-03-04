@@ -9,10 +9,10 @@
 
 <br />
 
-```ts
+```js
 const result = try JSON.parse(input)
 
-// Also works!
+// Can be destructured
 const { ok, error, value } = try await fetch("/api/users")
 const [ok, fetchErr, res] = try fs.readFileSync("data.txt")
 ```
@@ -303,7 +303,7 @@ try yield something()
 // Result<Awaited<ReturnType<typeof something>>>
 try await something()
 
-// catches TypeError: Right-hand side of 'instanceof' is not an object
+// Catches potential TypeError: Right-hand side of 'instanceof' is not an object
 try (a instanceof b)
 
 // Result<boolean> instanceof boolean
