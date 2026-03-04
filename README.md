@@ -9,9 +9,14 @@
 
 <br />
 
-<div align="center">
-  <img src="./assets/banner.png" alt="ECMAScript Try Operator Proposal" />
-</div>
+```js
+// Has ok, error and value
+const result = try JSON.parse(input)
+
+// Also works!
+const { ok, error, value } = try await fetch("/api/users")
+const [ok, fetchErr, response] = try await fetch("/api/users")
+```
 
 <br />
 
@@ -43,7 +48,7 @@ The try operator has no existing equivalent, since it allows error handling with
 - [Result Class](#result-class)
   - [Reference Implementation](#reference-implementation)
   - [Instance Structure](#instance-structure)
-  - [Iterable Protocol](#iterable-protocol)
+  - [Short Forms](#short-forms)
   - [Manual Creation](#manual-creation)
   - [`try()` static method](#try-static-method)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
@@ -226,7 +231,7 @@ One of the `Result` principles is to wrap at the top, not throughout the stack. 
 Consider a call chain where `getUser()` calls `db.select()`, which calls `db.connect()`. If none return `Result`, the caller can simply write:
 
 ```js
-const [ok, error, user] = try getUser(id)
+const result = try getUser(id)
 ```
 
 This single `try` captures any error thrown anywhere in the chain. Compare this to returning `Result` throughout the stack:
@@ -277,7 +282,10 @@ All of its usages are just a combination of the above said rules.
 // wraps the result of `something()` in a Result
 const a = try something()
 
-// Result is iterable
+// Result can be destructured as an object
+const { ok, error, value } = try something()
+
+// Result is also iterable
 const [ok, err, val] = try something()
 
 // Result still is iterable
@@ -498,13 +506,22 @@ if (result.ok) {
 }
 ```
 
-### Iterable Protocol
+### Short Forms
 
-To support ergonomic destructuring, `Result` instances are iterable. They yield their state in the order `[ok, error, value]`, allowing for clear, inline handling of both success and failure cases.
+Since `Result` is a regular object, it supports object destructuring:
 
 ```js
-const [success, validationError, user] = try User.parse(myJson)
+const { ok, error, value: user } = try User.parse(myJson)
 ```
+
+`Result` instances are also iterable, yielding their state in the order `[ok, error, value]`. This is particularly useful when combining multiple results, as positional destructuring allows easy renaming:
+
+```js
+const [userOk, userErr, user] = try User.parse(myJson)
+const [postOk, postErr, post] = try db.selectPost(postId, user)
+```
+
+Both forms consume the same `Result` object. Object destructuring accesses named properties, while iterable destructuring enables positional renaming when multiple results are in scope.
 
 ### Manual Creation
 
