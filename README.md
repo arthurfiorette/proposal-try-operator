@@ -21,11 +21,11 @@ const [ok, fetchErr, res] = try fs.readFileSync("data.txt")
 
 This proposal addresses the ergonomic challenges of managing multiple, often nested, `try/catch` blocks necessary for handling operations that may fail at various points.
 
-The try block needlessly encloses the protected code in a block. This prevents const assignments and breaks readability in other ways. Only the `catch (error) {}` block represents actual control flow, while no program state inherently depends on being inside a `try {}` block. Therefore, forcing the successful flow into nested blocks is not ideal.
+The try block needlessly encloses the protected code in a block. This often prevents straightforward `const` assignment patterns and can reduce readability through additional nesting. The `catch (error) {}` branch is usually where control-flow divergence happens, while the successful path is often linear.
 
-The solution is to add a `try <expression>` operator, a syntax similar to `await <expression>`, which catches any error that occurs when executing its expression and returns the error to the caller.
+The solution is to add a `try <expression>` operator, a syntax similar to `await <expression>`, which catches any error that occurs when executing its expression and returns it as a value to the caller.
 
-The try operator has no existing equivalent, since it allows error handling without crossing block or function boundaries.
+JavaScript has no existing syntax-level equivalent for in-place exception-to-value conversion at expression position without crossing block or function boundaries.
 
 <br />
 
@@ -44,12 +44,15 @@ The try operator has no existing equivalent, since it allows error handling with
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Void Operations](#void-operations)
   - [No Flattening](#no-flattening)
+  - [Precedence and Parsing Notes](#precedence-and-parsing-notes)
+  - [Sharp Edges and Hazards](#sharp-edges-and-hazards)
 - [Result Class](#result-class)
   - [Reference Implementation](#reference-implementation)
   - [Instance Structure](#instance-structure)
   - [Short Forms](#short-forms)
   - [Manual Creation](#manual-creation)
   - [`try()` static method](#try-static-method)
+- [Interop and Realms](#interop-and-realms)
 - [What This Proposal Does Not Aim to Solve](#what-this-proposal-does-not-aim-to-solve)
   - [Type-Safe Errors](#type-safe-errors)
   - [Automatic Error Handling](#automatic-error-handling)
@@ -57,6 +60,7 @@ The try operator has no existing equivalent, since it allows error handling with
 - [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [A Case for Syntax](#a-case-for-syntax)
 - [Why This Belongs in the Language](#why-this-belongs-in-the-language)
+- [Evidence Plan](#evidence-plan)
 - [Help Us Improve This Proposal](#help-us-improve-this-proposal)
 - [Inspiration](#inspiration)
 - [License](#license)
@@ -85,11 +89,9 @@ _For more information see the [TC39 proposal process](https://tc39.es/process-do
 
 The `try {}` block introduces additional block scoping around non-exceptional flow. Unlike loops or conditionals, it does not represent a distinct program state that must be isolated.
 
-On the other hand, the `catch {}` block **is** genuine control flow, making its scoping relevant. According to Oxford Languages, an exception is defined as:
+On the other hand, the `catch {}` block **is** genuine alternate control flow, making its scoping relevant.
 
-> a person or thing that is excluded from a general statement or does not follow a rule.
-
-Since catch explicitly handles exceptions, encapsulating exception-handling logic in a dedicated block makes sense. Following the same reasoning, there is no justification for also enclosing the non-exceptional flow in a block.
+Since `catch` explicitly handles exceptions, encapsulating exception-handling logic in a dedicated block makes sense. In many cases, however, the successful flow does not benefit from extra lexical nesting.
 
 Consider a simple function like this:
 
@@ -175,11 +177,11 @@ function getPostInfo(session, postId, cache, db) {
 }
 ```
 
-This approach improves readability by cleanly separating the happy path from error handling.
+This approach often improves readability by cleanly separating the happy path from error handling.
 
-Control flow remains linear, making it easier to follow, while only the "exceptions" in execution require explicit scoping.
+Control flow remains linear, making it easier to follow, while only exceptional paths require explicit branching.
 
-The result is a more structured, maintainable function where failures are handled concisely without unnecessary indentation.
+The result can be a more structured, maintainable function where failures are handled concisely without unnecessary indentation.
 
 <br />
 
@@ -402,20 +404,22 @@ A detailed discussion about this topic is available at [GitHub Issue #54](https:
 
 ### Never throws
 
-The `try` operator ensures that no error escapes its scope:
+The `try` operator converts any ECMAScript throw produced while evaluating its operand expression into a `Result.error(...)` value:
 
 ```js
 const [ok, error, result] = try some.thing()
 ```
 
-Regardless of the type of error that might occur, `try` will catch it. For example:
+For example:
 
 - If `some` is `undefined`.
 - If `thing` is not a function.
 - If accessing the `thing` property on `some` throws an error.
 - Any other exception that can arise on that line of code.
 
-All potential errors are safely caught and encapsulated within the `try` operator expression.
+All these thrown values are captured and encapsulated in the returned `Result`.
+
+As with other JavaScript constructs, host-level fatal termination conditions are out of scope.
 
 ### Parenthesis Required for Object Literals
 
@@ -460,13 +464,38 @@ function work() {
 }
 ```
 
+Ignoring a `Result` should be treated as an explicit choice. In critical code paths, prefer handling or rethrowing to avoid accidentally swallowing failures.
+
 ### No Flattening
 
 Wrapping a `Result`-returning function with `try` yields `Result<Result<T>>`, not a flattened `Result<T>`.
 
-This is intentional. Functions that return `Result` and also throw do exist in practice, but this proposal does not optimize for that pattern. The nested shape marks an unusual boundary: either `try` is unnecessary _(the callee already returns `Result`)_, or the callee contract is mismatched _(for example, it declares `Result<T>` but might throw)_. The rationale is not that `Result`-returning functions can never throw; it is that the operator should not silently normalize mixed channels.
+This is intentional. Functions that return `Result` and also throw do exist in practice, but this proposal does not optimize for that pattern. The nested shape marks an unusual boundary: either `try` is unnecessary _(the callee already returns `Result`)_, or the callee contract is mismatched _(for example, it declares `Result<T>` but might throw)_. The rationale is not that `Result`-returning functions can never throw. It is that the operator should not silently normalize mixed channels.
 
 If this becomes a pain point, future proposals could introduce `Result.flatten()` or `.unwrap()` methods. By contrast, automatic flattening would be difficult to remove later without compatibility risk.
+
+When nested `Result` appears repeatedly, it usually indicates a boundary mismatch. Prefer picking one error channel per boundary and normalizing explicitly.
+
+### Precedence and Parsing Notes
+
+This proposal keeps `try` expression-oriented. At Stage 0, the core goal is to validate ergonomics and semantics before final grammar tuning, but the intended parsing model is straightforward:
+
+- `try` applies to a single operand expression, similar in spirit to other expression-position operators.
+- `try await expr` is parsed as `try (await expr)`.
+- Parentheses disambiguate object literals and can always be used to make intent explicit.
+- Existing `try { ... } catch { ... }` statement form is unchanged.
+
+As the proposal advances, this section will be replaced by fully normative grammar and precedence text.
+
+### Sharp Edges and Hazards
+
+This operator is intentionally small and does not replace all error-handling patterns.
+
+- `try fetch()` is not the same as `try await fetch()`. Rejections are caught when awaited.
+- `try <expression>` is not a substitute for `try/finally` when cleanup must always run.
+- Ignoring a `Result` can hide failures if done carelessly.
+- Catching all throws at expression level may also catch programmer mistakes (for example `TypeError`) unless code distinguishes and rethrows.
+- For shared policies (global retries, framework boundaries, platform-level telemetry), handling may belong at a higher boundary.
 
 <br />
 
@@ -539,6 +568,18 @@ const failure = Result.error(new Error("Operation failed"))
 It also includes a static `Result.try()` method, which serves as the runtime foundation for the `try` operator. This method wraps a function call, catching any synchronous exceptions or asynchronous rejections and returning a `Result` or `Promise<Result>`, respectively.
 
 The proposed `try expression` syntax is essentially an ergonomic improvement over the more verbose `Result.try(() => expression)`, removing the need for a function wrapper.
+
+## Interop and Realms
+
+This proposal introduces a shared error-outcome value intended to work reliably across boundaries.
+
+At Stage 0, the interoperability goals are:
+
+- Cross-realm friendliness: values produced in one realm (for example iframe/vm contexts) should still be recognizable as `Result` in another.
+- Stable detection: developers should not have to rely exclusively on `instanceof` checks that can be realm-sensitive.
+- Predictable shape: `ok` is always present, with mutually exclusive `value` and `error` fields.
+
+The exact branding and detection details are expected to be finalized in later stages, together with committee feedback on best cross-realm practices.
 
 ## What This Proposal Does Not Aim to Solve
 
@@ -634,6 +675,12 @@ For a more in-depth explanation of this decision, refer to [GitHub Issue #30](ht
 
 This proposal intentionally combines the `try` operator with the `Result` class because each part motivates the other. The `try` operator standardizes a common pattern for safely catching synchronous function calls (similar to how Promise `.catch` handles async rejections).
 
+At Stage 0, this is presented as a design hypothesis to validate with feedback and real-world usage:
+
+- Syntax-only is incomplete: _it gives concise conversion but no shared standard outcome container_.
+- Runtime-only is incomplete: _it gives a container but keeps conversion boilerplate and callback wrappers_.
+- Combined proposal is coherent: _one expression form plus one standard shape_.
+
 It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
 
 Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
@@ -644,11 +691,20 @@ Without the `try` operator, the `Result` class is just one of many possible libr
 
 A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
 
-The absence of a `Result`-like type and a standard pattern for safely wrapping function calls has led to widespread ecosystem fragmentation. The NPM registry contains hundreds of variations attempting to implement safe wrapping of function calls, and countless more exist as private, copy-pasted utilities. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
+The absence of a `Result`-like type and a standard pattern for safely wrapping function calls has led to ecosystem fragmentation. Multiple packages and private utilities attempt to fill this gap with different shapes and conventions. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
 
-This is similar to the ecosystem pressure that preceded optional chaining (`?.`) and nullish coalescing (`??`), where many userland utilities addressed the same recurring problem. Standardizing this pattern aims to provide a stable shared primitive for JavaScript.
+Like earlier ergonomics proposals such as optional chaining (`?.`) and nullish coalescing (`??`), this proposal targets a recurring pattern that appears repeatedly in userland. Unlike those features, it also introduces a standard error-outcome container.
 
 It also creates a shared foundation between developers and package authors. Everyone can rely on the same Result implementation without compatibility concerns. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
+
+## Evidence Plan
+
+Because this proposal is at **Stage 0**, proving the problem and tradeoffs has priority over fully frozen specification text. This section will evolve as the proposal gains a champion and advances, but the initial plan is to:
+
+- Gather real examples of nested `try/catch` in production JavaScript and show equivalent `try <expression>` refactors.
+- Compare before/after readability in terms of nesting depth and branching structure.
+- Classify where this operator prevents mistakes vs where it could hide mistakes if misused.
+- Catalog existing tuple/result wrappers and incompatibilities to justify standardization value.
 
 <br />
 
