@@ -1,6 +1,6 @@
-<br />
-
 <h1>ECMAScript Try Operator</h1>
+
+<br />
 
 > [!TIP]  
 > You can test the runtime aspect of this proposal and its ergonomics today! Install our reference `Result` class implementation from NPM:
@@ -9,13 +9,12 @@
 
 <br />
 
-```js
-// Has ok, error and value
+```ts
 const result = try JSON.parse(input)
 
 // Also works!
 const { ok, error, value } = try await fetch("/api/users")
-const [ok, fetchErr, response] = try await fetch("/api/users")
+const [ok, fetchErr, res] = try fs.readFileSync("data.txt")
 ```
 
 <br />
