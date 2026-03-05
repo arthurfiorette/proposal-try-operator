@@ -25,7 +25,7 @@ The try block needlessly encloses the protected code in a block. This often prev
 
 The solution is to add a `try <expression>` operator, a syntax similar to `await <expression>`, which catches any error that occurs when executing its expression and returns it as a value to the caller.
 
-JavaScript has no existing syntax-level equivalent for in-place exception-to-value conversion at expression position without crossing block or function boundaries.
+JavaScript has no existing equivalent for in-place exception-to-value conversion without using executor callback arguments, which force code to cross function boundaries and create closures.
 
 <br />
 
@@ -179,9 +179,9 @@ function getPostInfo(session, postId, cache, db) {
 
 This approach often improves readability by cleanly separating the happy path from error handling.
 
-Control flow remains linear, making it easier to follow, while only exceptional paths require explicit branching.
+Control flow remains linear, making it easier to follow, while only exception paths require explicit branching.
 
-The result can be a more structured, maintainable function where failures are handled concisely without unnecessary indentation.
+The result is a more structured, maintainable function where failures are handled concisely without unnecessary indentation.
 
 <br />
 
