@@ -215,11 +215,9 @@ With that in mind, improvements in error handling can be approached in two ways:
    }
    ```
 
-Both approaches achieve the same goal, but the second one requires refactoring implementations into a new format. Languages like Go and Rust use callee-level result values from the start. Introducing that model later in JavaScript has a different compatibility and adoption profile.
+Both approaches turn failures into values, but the second one requires each function to adopt and preserve a `Result`-shaped contract. Languages like Go and Rust started with that model. JavaScript mostly did not, so introducing it later has a different compatibility and adoption profile.
 
-This proposal accounts for this by moving the transformation of errors into values to the **caller** level, preserving the familiar semantics and placement of `try/catch`. This approach ensures backward compatibility with existing code.
-
-For platforms like Node.js and widely used libraries, compatibility costs are high. As a result, a callee-based transition for APIs like `fetch` or `fs.readFile` is unlikely in practice because it would require broad refactoring across existing codebases.
+This proposal therefore focuses on caller-side conversion. It keeps the familiar placement of `try/catch`, works with existing throw-based APIs, and avoids broad refactors across codebases and libraries.
 
 Ironically, **these are precisely the kinds of functions where improved error handling is most needed**.
 
@@ -227,15 +225,21 @@ Ironically, **these are precisely the kinds of functions where improved error ha
 
 ## Result as a Return Type
 
-One of the `Result` principles is to wrap at the top, not throughout the stack. Returning `Result` from functions is possible, but often unnecessary.
+Returning `Result` is valid and often useful, especially when callers should acknowledge specific failures explicitly.
+
+This proposal is optimized for a different default: JavaScript already has a large ecosystem of `throw`-based APIs, so converting errors into values _on the caller side_ is often the cheaper migration path.
 
 Consider a call chain where `getUser()` calls `db.select()`, which calls `db.connect()`. If none return `Result`, the caller can simply write:
 
 ```js
-const result = try getUser(id)
+function getUser(id) {
+  const conn = db.connect()
+  const user = db.select(conn, id)
+  return normalize(user);
+}
 ```
 
-This single `try` captures any error thrown anywhere in the chain. Compare this to returning `Result` throughout the stack:
+This single `try` captures any error thrown anywhere in the chain. Compare that to returning `Result` throughout the stack:
 
 ```js
 // Every function must check and forward errors.
@@ -244,26 +248,30 @@ function getUser(id) {
   const connResult = db.connect()
 
   if (!connResult.ok) {
-    return connResult
+    throw connResult.error
   }
 
   const userResult = db.select(connResult.value, id)
 
   if (!userResult.ok) {
-    return userResult
+    throw userResult
   }
 
-  return Result.ok(normalize(userResult.value))
+  return normalize(userResult.value);
 }
 ```
 
-`Result`-returning functions cannot be freely composed with `throw`-based functions without explicit unwrapping at each boundary. This repetitive `if (!result.ok) { return result }` forwarding is reminiscent of Go's `if err != nil { return err }`. [Rob Pike's "Errors are values"](https://go.dev/blog/errors-are-values) addresses this: the solution is not more syntax sugar _(a `try?`-like operator)_, but recognizing that errors are values that can be programmed creatively. In many cases, this repetition is a useful signal that the code may benefit from restructuring rather than new syntax.
+This is reminiscent of Go's `if err != nil { return err }`, even though Go's tuples and JavaScript `Result` objects are not otherwise the same abstraction. Sometimes that repetition is acceptable. Sometimes it is just redundant plumbing around behavior that would otherwise happen automatically.
 
-Returning `Result` can force callers to acknowledge errors in ways JSDoc cannot. However, the function coloring tradeoff often outweighs this benefit. When acknowledgement is not required, a single `try` at the top of the call stack achieves the same safety without coloring every function in the chain.
+Returning `Result` can force callers to acknowledge errors in ways JSDoc cannot. That benefit is real. The cost is that developers end up checking and rethrowing failures that would otherwise bubble naturally.
 
-The `try` operator is designed to coexist with `throw`, not replace it. Following the [caller's approach](#callers-approach), functions typically throw and let callers decide how to handle errors. Returning `Result` can still make sense when forcing acknowledgement is more important than minimizing cross-boundary error-conversion boilerplate.
+This is especially visible in server-style request handling. If `db.connect()`, `db.select()`, or `normalize()` throws, the practical outcome may already be to abort the request, log the failure, and show a generic error page. It is also useful for parsing and validation. 
 
-Mixed patterns (`Result` return + `throw`) may exist in practice, but this proposal treats them as unusual boundaries rather than the default composition path (see [No Flattening](#no-flattening)).
+Forcing the caller to check the result for errors to rethrow is just more code they have to write. If the caller wants to catch one error, they can add the `try` operator at that one point and handle it. 
+
+Giving the caller the option to decide where they want their stack to unwind to when an error happens is often more useful than returning a result directly. 
+
+The `try` operator is designed to coexist with `throw`, not replace it. Mixed patterns (`Result` return + `throw`) do exist in practice. This proposal treats those as boundaries that should remain explicit rather than be silently normalized by the operator (see [No Flattening](#no-flattening)).
 
 For further discussion, see [GitHub Issue #92](https://github.com/arthurfiorette/proposal-try-operator/issues/92).
 
@@ -470,11 +478,13 @@ Ignoring a `Result` should be treated as an explicit choice. In critical code pa
 
 Wrapping a `Result`-returning function with `try` yields `Result<Result<T>>`, not a flattened `Result<T>`.
 
-This is intentional. Functions that return `Result` and also throw do exist in practice, but this proposal does not optimize for that pattern. The nested shape marks an unusual boundary: either `try` is unnecessary _(the callee already returns `Result`)_, or the callee contract is mismatched _(for example, it declares `Result<T>` but might throw)_. The rationale is not that `Result`-returning functions can never throw. It is that the operator should not silently normalize mixed channels.
+This is intentional. Functions that return `Result` and also throw or reject do exist in practice. The rationale is not that mixed channels are impossible or invalid. It is that the operator should not silently normalize them.
+
+The nested shape keeps the boundary visible. In some cases, that visibility means `try` is unnecessary because the callee already returns `Result`. In others, it highlights a contract mismatch: the callee communicates some failures as `Result`, but still has exceptional failures that cross the same boundary.
 
 If this becomes a pain point, future proposals could introduce `Result.flatten()` or `.unwrap()` methods. By contrast, automatic flattening would be difficult to remove later without compatibility risk.
 
-When nested `Result` appears repeatedly, it usually indicates a boundary mismatch. Prefer picking one error channel per boundary and normalizing explicitly.
+When nested `Result` appears repeatedly, it usually indicates a boundary worth revisiting. Prefer picking one primary error channel per boundary and normalizing explicitly when a mixed model is intentional.
 
 ### Precedence and Parsing Notes
 
@@ -705,6 +715,7 @@ Because this proposal is at **Stage 0**, proving the problem and tradeoffs has p
 - Compare before/after readability in terms of nesting depth and branching structure.
 - Classify where this operator prevents mistakes vs where it could hide mistakes if misused.
 - Catalog existing tuple/result wrappers and incompatibilities to justify standardization value.
+- Collect examples of mixed-channel code (`Result` return plus `throw`/rejection) to evaluate how common those boundaries are and where explicit normalization is preferable.
 
 <br />
 
