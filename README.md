@@ -227,7 +227,7 @@ Ironically, **these are precisely the kinds of functions where improved error ha
 
 ## Result as a Return Type
 
-One of the `Result` principles is to wrap at the top, not throughout the stack. Returning `Result` from functions is possible, but often unnecessary.
+Returning `Result` from functions is a valid design choice. It forces callers to acknowledge errors explicitly, in a way that `throw`-based functions cannot guarantee at the type level.
 
 Consider a call chain where `getUser()` calls `db.select()`, which calls `db.connect()`. If none return `Result`, the caller can simply write:
 
@@ -257,13 +257,15 @@ function getUser(id) {
 }
 ```
 
-`Result`-returning functions cannot be freely composed with `throw`-based functions without explicit unwrapping at each boundary. This repetitive `if (!result.ok) { return result }` forwarding is reminiscent of Go's `if err != nil { return err }`. [Rob Pike's "Errors are values"](https://go.dev/blog/errors-are-values) addresses this: the solution is not more syntax sugar _(a `try?`-like operator)_, but recognizing that errors are values that can be programmed creatively. In many cases, this repetition is a useful signal that the code may benefit from restructuring rather than new syntax.
+This repetitive `if (!result.ok) { return result }` forwarding is verbose. [Rob Pike's "Errors are values"](https://go.dev/blog/errors-are-values) describes a similar concern: the solution is not adding new forwarding syntax, but recognizing that errors are values that can be handled creatively. In many cases, this repetition is a signal that the code may benefit from restructuring. That said, `Result` in ECMAScript carries richer potential than Go's plain error tuples — a `Result` type in the language can gain monadic composition methods that eliminate much of this boilerplate.
 
-Returning `Result` can force callers to acknowledge errors in ways JSDoc cannot. However, the function coloring tradeoff often outweighs this benefit. When acknowledgement is not required, a single `try` at the top of the call stack achieves the same safety without coloring every function in the chain.
+Returning `Result` does introduce a tradeoff: callers that want to compose `Result`-returning functions with `throw`-based functions must explicitly unwrap at each boundary. Whether this is acceptable depends on the use case and how important it is to surface errors at the type level.
 
-The `try` operator is designed to coexist with `throw`, not replace it. Following the [caller's approach](#callers-approach), functions typically throw and let callers decide how to handle errors. Returning `Result` can still make sense when forcing acknowledgement is more important than minimizing cross-boundary error-conversion boilerplate.
+A `try` at the top of a call stack is simpler, but it is not equivalent to returning `Result` throughout the chain in every respect. Top-level catching depends implicitly on specific error constructors; if throwing code changes its error class — due to a library update, refactoring, or version conflicts — the error handling can silently break. Returning `Result` makes the error type explicit and compiler-verifiable.
 
-Mixed patterns (`Result` return + `throw`) may exist in practice, but this proposal treats them as unusual boundaries rather than the default composition path (see [No Flattening](#no-flattening)).
+In practice, mixed patterns — functions that return `Result` for expected, recoverable failures and also throw for unexpected or programmer errors — are a natural and valid design. The same function can simultaneously use both error channels. The `try` operator handles this: use `try` to catch unexpected throws, and inspect the returned `Result` for expected failures (see [No Flattening](#no-flattening)).
+
+The `try` operator is designed to coexist with `throw`, not replace it. Following the [caller's approach](#callers-approach), the operator lets callers handle errors from `throw`-based functions without requiring callee changes. Returning `Result` remains a sound choice when making expected failures explicit and forcing acknowledgement is more important than minimizing boilerplate at call boundaries.
 
 For further discussion, see [GitHub Issue #92](https://github.com/arthurfiorette/proposal-try-operator/issues/92).
 
