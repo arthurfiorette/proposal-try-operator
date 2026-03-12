@@ -113,24 +113,6 @@ class Result {
   static error(error) {
     return new Result(false, error, undefined)
   }
-  /* a convenience method for user-land, not used by the try operator */
-  static try(arg, ...args) {
-    try {
-      let result;
-      if (/* IsCallable(arg) */typeof arg === "function") {
-        result = arg.apply(undefined, args)
-      } else {
-        result = arg;
-      }
-      if (/* IsPromise (result) */result instanceof Promise) {
-        return result.then(Result.ok, Result.error)
-      } else {
-        return Result.ok(result);
-      }
-    } catch (e) {
-      return Result.error(e)
-    }
-  }
 }
 </code></pre>
 </emu-clause>
