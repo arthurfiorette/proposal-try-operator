@@ -193,7 +193,7 @@ The result is a more structured, maintainable function where failures are handle
 
 An operator behaves like a function call with arguments and a return value. The `await` operator, for instance, takes a single argument (the code it awaits) and "returns" the value a promise resolves to, or "throws" the value a promise rejects with. 
 
-Here, the `try` operator also takes a single argument, the code it protects, and "returns" a `Result`.
+Here, the `try` operator also takes a single argument (the code it protects) and "returns" a `Result`.
 
 A shorthand notation for `Result` in this proposal is `Result(true, value)` and `Result(false, error)`, representing `[true, undefined, value]` and `[false, error, undefined]`, respectively.
 
