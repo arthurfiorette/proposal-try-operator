@@ -141,7 +141,7 @@ function getPostInfo(session, postSlug, cache, db) {
 }
 ```
 
-In this example, the `try` blocks primarily introduce additional nesting and prevents the additional protection of a `const` declaration.
+In this example, the `try` blocks introduce additional nesting and prevent the protection a `const` declaration would provide.
 
 It also tends to interfere with static analysis tools, forcing developers to look for alternate solutions.
 
@@ -202,11 +202,11 @@ Consider a call chain where `getUser()` calls `db.connect()` and then `db.select
 function getUser(id, request, response) {
   const result = try normalize(db.select(db.connect(), id));
 
-  if(!result.ok) 
-    return response.send(JSON.stringify(result.value)).end();
-  else 
+  if (!result.ok) {
     throw new ServerError(result.error, request, response);
-}
+  } else {
+    return response.send(JSON.stringify(result.value)).end();
+  }
 ```
 
 Giving the caller control over exactly where the stack unwinds to is often more useful than returning a `Result` directly.
