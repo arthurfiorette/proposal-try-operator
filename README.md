@@ -255,13 +255,7 @@ For further discussion, see [GitHub Issue #92](https://github.com/arthurfiorette
 
 Wrapping a `Result`-returning function with `try` yields `Result<Result<T>>`, not a flattened `Result<T>`.
 
-This is intentional. The `try` operator is meant to convert exceptions into known, guaranteed values at the call site. 
-
-If the callee returns a `Result`, that result is considered a value, even if it's a `Result` with an error property, because it represents code that ran to completion and called `return Result.error()`. 
-
-Flattening it would blur the clean boundary between successful execution and failed execution that `try` has to maintain. You could still infer it by exploring the source code or reading documentation, but it would no longer be a simple guaranteed operator. 
-
-The caller can wrap the expression in a simple helper function to flatten it. 
+This is intentional. The `try` operator must always maintain equivelance to the `try...catch` block. Flattening a Result would blur the clean boundary between successful execution and failed execution that a `try...catch` block guarantees. For the `try` operator to have the same guarantees, a returned value must always be separated from a thrown value.
 
 ## Try Operator
 
@@ -626,29 +620,24 @@ A detailed discussion about this topic is available at [GitHub Issue #13](https:
 
 ## The Need for an `ok` Value
 
-The idea of `throw x` doing _anything_ other than throwing `x` is inherently flawed. Wrapping the `error` in an object disregards this principle and introduces unnecessary ambiguity.
+In JavaScript, `throw x` throws `x`. There is no wrapping or any other processing, so `throw undefined` is perfectly valid.
 
-Consider the following pseudocode, which might seem harmless but is actually risky:
+Consider the following pseudocode:
 
 ```js
-function doWork() {
-  if (check) {
-    throw createException(Errors.SOMETHING_WENT_WRONG)
-  }
-
-  return work()
+function doWork(input) {
+  if(!db.saveUser(input))
+    throw undefined;
 }
 
-const [error, data] = try doWork()
+const [error, data] = try doWork(input)
 
 if (!error) {
-  user.send(data)
+  user.send({success: true})
 }
 ```
 
-There is no guarantee that `createException` always returns an exception. Someone could even mistakenly write `throw null` or `throw undefined`, both of which are valid but undesired JavaScript code.
-
-Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
+Because `doWork` throws `undefined` and returns `undefined`, there is no way to tell whether it was successful. No matter how undesirable this contrived example is, it is completely valid JavaScript. In order to maintain the guarantees of the `try...catch` block, there has to be some way to tell the difference between a thrown value and a returned value that allows `undefined` to be a thrown value. 
 
 For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-operator/issues/30).
 
@@ -656,17 +645,15 @@ For a more in-depth explanation of this decision, refer to [GitHub Issue #30](ht
 
 ## A Case for Syntax
 
-This proposal intentionally combines the `try` operator with the `Result` class because each part motivates the other. The `try` operator standardizes a common pattern for safely catching synchronous function calls (similar to how Promise `.catch` handles async rejections).
+This proposal intentionally combines the `try` operator with the `Result` class because each part motivates the other. The `try` operator provides a useful pattern for safely catching synchronous function calls without resorting to block scope hoisting (similar to how Promise `.catch` handles async rejections by returning a user-defined value).
 
-At Stage 0, this is presented as a design hypothesis to validate with feedback and real-world usage:
+At Stage 0, this is presented as a design hypothesis to validate with feedback and real-world usage.
 
-- Syntax-only is incomplete: _it gives concise conversion but no shared standard outcome container_.
-- Runtime-only is incomplete: _it gives a container but keeps conversion boilerplate and callback wrappers_.
-- Combined proposal is coherent: _one expression form plus one standard shape_.
+It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. 
 
-It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
+Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
 
-Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
+We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
 
 <br />
 
@@ -674,11 +661,9 @@ Without the `try` operator, the `Result` class is just one of many possible libr
 
 A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
 
-The absence of a `Result`-like type and a standard pattern for safely wrapping function calls has led to ecosystem fragmentation. Multiple packages and private utilities attempt to fill this gap with different shapes and conventions. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
+Like earlier ergonomics proposals such as optional chaining (`?.`) and nullish coalescing (`??`), this proposal targets a recurring pattern that appears repeatedly in userland. Unlike those features, it also introduces a standard error-outcome container. 
 
-Like earlier ergonomics proposals such as optional chaining (`?.`) and nullish coalescing (`??`), this proposal targets a recurring pattern that appears repeatedly in userland. Unlike those features, it also introduces a standard error-outcome container.
-
-It also creates a shared foundation between developers and package authors. Everyone can rely on the same Result implementation without compatibility concerns. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
+At this stage of the proposal it is not intended to cover every variation of existing libraries out there, but simply to provide the features required for the `try` operator to work. 
 
 ## Evidence Plan
 
