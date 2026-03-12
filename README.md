@@ -32,8 +32,10 @@ JavaScript has no existing equivalent for in-place exception-to-value conversion
 - [Status](#status)
 - [Authors](#authors)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
+- [The rules of `try...catch` must be maintained](#the-rules-of-trycatch-must-be-maintained)
+  - [The Need for an `ok` Value](#the-need-for-an-ok-value)
+  - [No Flattening](#no-flattening)
 - [Caller vs Callee: Using Result as a Return Type](#caller-vs-callee-using-result-as-a-return-type)
-- [No Flattening](#no-flattening)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
   - [Can be inlined](#can-be-inlined)
@@ -56,7 +58,6 @@ JavaScript has no existing equivalent for in-place exception-to-value conversion
   - [Type-Safe Errors](#type-safe-errors)
   - [Automatic Error Handling](#automatic-error-handling)
 - [Why Not `data` First?](#why-not-data-first)
-- [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [A Case for Syntax](#a-case-for-syntax)
 - [Why This Belongs in the Language](#why-this-belongs-in-the-language)
 - [Evidence Plan](#evidence-plan)
@@ -188,6 +189,41 @@ The result is a more structured, maintainable function where failures are handle
 
 <br />
 
+## The rules of `try...catch` must be maintained
+
+An operator behaves like a function call with arguments and a return value. The `await` operator, for instance, takes a single argument (the code it awaits) and "returns" the value a promise resolves to, or "throws" the value a promise rejects with. 
+
+Here, the `try` operator also takes a single argument, the code it protects, and "returns" a `Result`.
+
+A shorthand notation for `Result` in this proposal is `Result(true, value)` and `Result(false, error)`, representing `[true, undefined, value]` and `[false, error, undefined]`, respectively.
+
+The `try` operator never throws, and it catches anything the code in its expression throws during execution. Just like the `try {}` block, it does NOT catch syntax errors since those occur when the file is loaded.
+
+The `try` operator must always maintain equivelance to the `try...catch` block. 
+
+- `try {}` - when the try operator returns `[true, undefined, value]`.
+- `catch (e) {}` - when the try operator returns `[false, error, undefined]`.
+- `finally {}` - statements following the try operator. 
+
+
+### The Need for an `ok` Value
+
+In JavaScript, `throw x` throws `x`. There is no wrapping or any other processing, so `throw undefined` is perfectly valid.
+
+Because code can both throw `undefined` and return `undefined`, there is no way to tell whether it was successful based on `error` and `value` alone. No matter how undesirable it is to throw `undefined`, it is completely valid JavaScript. In order to maintain the guarantees of the `try...catch` block, there has to be some way to tell the difference between a thrown value and a returned value that still allows `undefined` to be a thrown value. 
+
+The most obvious solution is to add a boolean to the result. 
+
+### No Flattening
+
+Nested Results are not flattened, whether its a value or error.
+
+This is intentional. For the `try` operator to have the same guarantees as `try...catch`, it must let the user determine whether the expression threw or returned. Flattening a Result would blur the clean boundary between successful execution and failed execution. 
+
+If the user wants to flatten the result, that's fine, but there's no way for them to _unflatten_ it if they needed to know the difference. 
+
+<br />
+
 ## Caller vs Callee: Using Result as a Return Type
 
 This proposal starts from a simple fact: JavaScript already has a large ecosystem of `throw`-based APIs. The goal is not to replace exception propagation, but to make exception-to-value conversion cheap exactly where the caller wants it. That lets callers choose the boundary where errors stop unwinding and start being handled as values.
@@ -247,15 +283,7 @@ Nothing prevents developers from returning a `Result`, but the `try` operator so
 
 Returning a `Result` is still valid and useful when callers should acknowledge failures explicitly and the failure information itself is part of the API contract. That is more likely when failures carry structured, standardized data, such as the success or failure of a financial transaction or an HTTP request that successfully got a `404` response.
 
-For further discussion, see [GitHub Issue #92](https://github.com/arthurfiorette/proposal-try-operator/issues/92).
-
 <br />
-
-## No Flattening
-
-Wrapping a `Result`-returning function with `try` yields `Result<Result<T>>`, not a flattened `Result<T>`.
-
-This is intentional. The `try` operator must always maintain equivelance to the `try...catch` block. Flattening a Result would blur the clean boundary between successful execution and failed execution that a `try...catch` block guarantees. For the `try` operator to have the same guarantees, a returned value must always be separated from a thrown value.
 
 ## Try Operator
 
@@ -615,31 +643,6 @@ try {
 ```
 
 A detailed discussion about this topic is available at [GitHub Issue #13](https://github.com/arthurfiorette/proposal-try-operator/issues/13) for those interested.
-
-<br />
-
-## The Need for an `ok` Value
-
-In JavaScript, `throw x` throws `x`. There is no wrapping or any other processing, so `throw undefined` is perfectly valid.
-
-Consider the following pseudocode:
-
-```js
-function doWork(input) {
-  if(!db.saveUser(input))
-    throw undefined;
-}
-
-const [error, data] = try doWork(input)
-
-if (!error) {
-  user.send({success: true})
-}
-```
-
-Because `doWork` throws `undefined` and returns `undefined`, there is no way to tell whether it was successful. No matter how undesirable this contrived example is, it is completely valid JavaScript. In order to maintain the guarantees of the `try...catch` block, there has to be some way to tell the difference between a thrown value and a returned value that allows `undefined` to be a thrown value. 
-
-For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-operator/issues/30).
 
 <br />
 
