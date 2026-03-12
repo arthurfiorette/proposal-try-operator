@@ -218,9 +218,9 @@ The most obvious solution is to add a boolean to the result.
 
 Nested Results are not flattened, whether its a value or error.
 
-This is intentional. For the `try` operator to have the same guarantees as `try...catch`, it must let the user determine whether the expression threw or returned. Flattening a Result would blur the clean boundary between successful execution and failed execution. 
+This is intentional. For the `try` operator to have the same guarantees as `try...catch`, it must let the user determine whether an expression throws or completes. Flattening a Result would blur the clean boundary between successful execution and failed execution, meaning the user could not distinguish between _returning_ `Result(false)` and actually throwing an error, or between _throwing_ `Result(true)` and actually returning a value. 
 
-If the user wants to flatten the result, that's fine, but there's no way for them to _unflatten_ it if they needed to know the difference. 
+A user can always flatten the result if they want, but there's no way for them to _unflatten_ it if they need to know the difference. 
 
 <br />
 
