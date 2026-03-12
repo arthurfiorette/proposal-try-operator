@@ -195,7 +195,9 @@ An operator behaves like a function call with arguments and a return value. The 
 
 Here, the `try` operator also takes a single argument (the code it protects) and "returns" a `Result`.
 
-A shorthand notation for `Result` in this proposal is `Result(true, value)` and `Result(false, error)`, representing `[true, undefined, value]` and `[false, error, undefined]`, respectively.
+> [!TIP]  
+>
+> A shorthand notation for `Result` in this proposal is `Result(true, value)` and `Result(false, error)`, representing `[true, undefined, value]` and `[false, error, undefined]`, respectively.
 
 The `try` operator never throws, and it catches anything the code in its expression throws during execution. Just like the `try {}` block, it does NOT catch syntax errors since those occur when the file is loaded.
 
