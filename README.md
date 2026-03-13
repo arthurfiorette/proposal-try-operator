@@ -191,7 +191,7 @@ The result is a more structured, maintainable function where failures are handle
 
 ## The rules of `try...catch` must be maintained
 
-An operator behaves like a function call with arguments and a return value. The `await` operator, for instance, takes a single argument (the code it awaits) and "returns" the value a promise resolves to, or "throws" the value a promise rejects with. 
+An operator behaves like a function call with arguments and a return value. The `await` operator, for instance, takes a single argument (the expression it awaits) and "returns" the value a promise resolves to, or "throws" the value a promise rejects with. 
 
 Here, the `try` operator also takes a single argument (the code it protects) and "returns" a `Result`.
 
@@ -207,7 +207,7 @@ The `try` operator must always maintain equivelance to the `try...catch` block.
 - `catch (e) {}` - when the try operator returns `[false, error, undefined]`.
 - `finally {}` - statements following the try operator. 
 
-
+<br />
 ### The Need for an `ok` Value
 
 In JavaScript, `throw x` throws `x`. There is no wrapping or any other processing, so `throw undefined` is perfectly valid.
@@ -215,6 +215,8 @@ In JavaScript, `throw x` throws `x`. There is no wrapping or any other processin
 Because code can both throw `undefined` and return `undefined`, there is no way to tell whether it was successful based on `error` and `value` alone. No matter how undesirable it is to throw `undefined`, it is completely valid JavaScript. In order to maintain the guarantees of the `try...catch` block, there has to be some way to tell the difference between a thrown value and a returned value that still allows `undefined` to be a thrown value. 
 
 The most obvious solution is to add a boolean to the result. 
+
+<br />
 
 ### No Flattening
 
@@ -669,6 +671,8 @@ A proposal doesn’t need to introduce a feature that is entirely impossible to 
 Like earlier ergonomics proposals such as optional chaining (`?.`) and nullish coalescing (`??`), this proposal targets a recurring pattern that appears repeatedly in userland. Unlike those features, it also introduces a standard error-outcome container. 
 
 At this stage of the proposal it is not intended to cover every variation of existing libraries out there, but simply to provide the features required for the `try` operator to work. 
+
+<br/>
 
 ## Evidence Plan
 
