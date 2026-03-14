@@ -35,7 +35,7 @@ JavaScript has no existing equivalent for in-place exception-to-value conversion
 - [The rules of `try...catch` must be maintained](#the-rules-of-trycatch-must-be-maintained)
   - [The Need for an `ok` Value](#the-need-for-an-ok-value)
   - [No Flattening](#no-flattening)
-- [Caller vs Callee: Using Result as a Return Type](#caller-vs-callee-using-result-as-a-return-type)
+- [Caller vs Callee: Return Result Directly?](#caller-vs-callee-return-result-directly)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
   - [Can be inlined](#can-be-inlined)
@@ -191,21 +191,24 @@ The result is a more structured, maintainable function where failures are handle
 
 ## The rules of `try...catch` must be maintained
 
-An operator behaves like a function call with arguments and a return value. The `await` operator, for instance, takes a single argument (the expression it awaits) and "returns" the value a promise resolves to, or "throws" the value a promise rejects with. 
+The `try` block is pretty simple: 
 
-Here, the `try` operator also takes a single argument (the code it protects) and "returns" a `Result`.
+- `try {}` - This block completes if nothing throws.
+- `catch (e) {}` - This block is run if something throws.
+- `finally {}` - This runs regardless of whether anything throws. 
 
-> [!TIP]  
->
-> A shorthand notation for `Result` in this proposal is `Result(true, value)` and `Result(false, error)`, representing `[true, undefined, value]` and `[false, error, undefined]`, respectively.
+The `try` operator runs an expression and returns three values.
 
-The `try` operator never throws, and it catches anything the code in its expression throws during execution. Just like the `try {}` block, it does NOT catch syntax errors since those occur when the file is loaded.
-
-The `try` operator must always maintain equivelance to the `try...catch` block. 
-
-- `try {}` - when the try operator returns `[true, undefined, value]`.
-- `catch (e) {}` - when the try operator returns `[false, error, undefined]`.
-- `finally {}` - statements following the try operator. 
+- `success` -- whether the expression threw
+- `error` -- if the expression throws, the value that was thrown
+- `value` -- if the expression returns, the value that was returned
+- The `success` boolean allows the user to add a conditional branch for the corresponding `catch` code.
+  ```
+  if (!success) {
+    // catch code
+  }
+  ```
+- Since `try` itself never throws, `finally` is implicit. 
 
 <br />
 ### The Need for an `ok` Value
@@ -222,13 +225,13 @@ The most obvious solution is to add a boolean to the result.
 
 Nested Results are not flattened, whether its a value or error.
 
-This is intentional. For the `try` operator to have the same guarantees as `try...catch`, it must let the user determine whether an expression throws or completes. Flattening a Result would blur the clean boundary between successful execution and failed execution, meaning the user could not distinguish between _returning_ `Result(false)` and actually throwing an error, or between _throwing_ `Result(true)` and actually returning a value. 
+This is intentional. Flattening a Result would allow the expression to lie about whether or not it threw, simply by returning an error Result or throwing a value Result.
 
 A user can always flatten the result if they want, but there's no way for them to _unflatten_ it if they need to know the difference. 
 
 <br />
 
-## Caller vs Callee: Using Result as a Return Type
+## Caller vs Callee: Return Result Directly?
 
 This proposal starts from a simple fact: JavaScript already has a large ecosystem of `throw`-based APIs. The goal is not to replace exception propagation, but to make exception-to-value conversion cheap exactly where the caller wants it. That lets callers choose the boundary where errors stop unwinding and start being handled as values.
 
@@ -236,24 +239,28 @@ JavaScript already follows a similar model for asynchronous code. Promise reject
 
 This is especially the case in server-style request handling. If `db.connect()`, `db.select()`, or `normalize()` throws, the practical outcome may be to abort the request, log the failure, and show a generic error page. Similar patterns appear in parser and validation code, where unexpected failures often just bubble until a specific boundary chooses to intercept them.
 
-Consider a call chain where `getUser()` calls `db.connect()` and then `db.select()`. If none return `Result`, the stack will simply unwind automatically to whatever point that the caller decides.
+It usually doesn't make sense in the modern JavaScript ecosystem for a library to return a Result. Most code already throws when something goes wrong. The `try` operator makes it easier to handle code that throws. Returning a result makes this more difficult. 
+
+Consider a call chain where `getUser()` calls `db.connect()` and then `db.select()`. If errors are simply thrown, the stack will unwind automatically to whatever point the caller decides.
 
 ```js
 function getUser(id, request, response) {
   const result = try normalize(db.select(db.connect(), id));
 
-  if (!result.ok) {
-    throw new ServerError(result.error, request, response);
+  if (!result.ok && result.error instanceof DBError && result.error.code === "NOT_FOUND") {
+    // return a custom message to the user
+    return response.status(404).end();
+  } else if (!result.ok) {
+    throw new ServerError(result.error);
   } else {
     return response.send(JSON.stringify(result.value)).end();
   }
+}
 ```
 
-Giving the caller control over exactly where the stack unwinds to is often more useful than returning a `Result` directly.
+Giving the caller control (with the `try` operator) over exactly how far the stack unwinds is often more useful than returning a `Result` directly.
 
-Returning a `Result` can force callers to acknowledge errors in ways JSDoc cannot. That benefit is real. The cost is that developers end up checking and rethrowing failures that would otherwise bubble naturally. Forcing the caller to check a result only to rethrow it is rarely necessary.
-
-If our database returned `Result` for every operation, it might force our developer to do something like this:
+If our database returned `Result` for every operation:
 
 ```js
 // Every function must check and forward errors.
@@ -262,30 +269,29 @@ function getUser(id, request, response) {
   const connResult = db.connect()
 
   if (!connResult.ok) {
-    throw new ServerError(connResult.error, request, response);
+    throw new ServerError(connResult.error);
   }
 
   const userResult = db.select(connResult.value, id)
 
   if (!userResult.ok) {
-    throw new ServerError(userResult.error, request, response);
+    throw new ServerError(userResult.error);
   }
 
+  // and return it from our function because we might as well at this point
   const normResult = normalize(userResult.value);
 
   if (!normResult.ok) {
-    throw new ServerError(normResult.error, request, response);
+    throw new ServerError(normResult.error);
   }
 
   return response.send(JSON.stringify(normResult.value)).end();
 }
 ```
 
-This is reminiscent of Go's `if err != nil { return err }`, even though Go's tuples and JavaScript `Result` objects are not otherwise the same abstraction. Sometimes that repetition is acceptable. Sometimes it is just redundant plumbing around behavior that would otherwise happen automatically.
+This is obviously far more code to maintain, a lot of it repetitive and often redundent in these scenarios. 
 
-Nothing prevents developers from returning a `Result`, but the `try` operator solves the biggest reason why JavaScript developers often want to return a `Result` instead of throwing: the wonky and egregious code pathing and static-analysis breaking that is currently required.
-
-Returning a `Result` is still valid and useful when callers should acknowledge failures explicitly and the failure information itself is part of the API contract. That is more likely when failures carry structured, standardized data, such as the success or failure of a financial transaction or an HTTP request that successfully got a `404` response.
+I'm sure there are times when returning a Result might make sense, but this proposal isn't about that. It's about the `try` operator, and the try operator just needs some way to encapsulate its three values. 
 
 <br />
 
