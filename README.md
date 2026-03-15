@@ -293,9 +293,10 @@ This is obviously far more code to maintain, a lot of it repetitive and often re
 
 I'm sure there are times when returning a Result might make sense, but this proposal isn't about that. It's about the `try` operator, and the try operator just needs some way to encapsulate its three values. 
 
-Even here, the benefit of the try operator is that developers can pass the whole try expression to a helper function that converts the Result into their chosen error composition cascade. 
+Even here, the benefit of the try operator is that developers can pass the whole try expression to a helper function that converts the Result into their chosen error composition cascade. The callback that would previously have been required and often breaks static analysis is no longer necessary.
 
 ```ts
+// instead of toChainMatch(() => db.select(db.connect(), id))
 toChainMatch(try db.select(db.connect(), id))
   .chain(user => { if(!user) throw "NOT_FOUND"; })
   .chain(normalize)
