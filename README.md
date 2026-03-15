@@ -233,9 +233,9 @@ A user can always flatten the result if they want, but there's no way for them t
 
 ## Caller vs Callee: Return Result Directly?
 
-This proposal starts from a simple fact: JavaScript already has a large ecosystem of `throw`-based APIs. The goal is not to replace exception propagation, but to make exception-to-value conversion cheap exactly where the caller wants it. That lets callers choose the boundary where errors stop unwinding and start being handled as values.
+JavaScript already has a large ecosystem of `throw`-based APIs. The goal of this proposal is to make exceptions easier to consume and handle, not change how often developers throw errors. 
 
-JavaScript already follows a similar model for asynchronous code. Promise rejections propagate up the `await` stack until the caller chooses a boundary with `.catch()`. The `try` operator brings that same caller-controlled inline exception-to-value conversion to synchronous code.
+JavaScript already has a similar model for async code. Promise rejections propagate up the `await` stack until the caller chooses a boundary with `.catch()`. The `try` operator brings that same caller-controlled inline exception-to-value conversion to synchronous code.
 
 This is especially the case in server-style request handling. If `db.connect()`, `db.select()`, or `normalize()` throws, the practical outcome may be to abort the request, log the failure, and show a generic error page. Similar patterns appear in parser and validation code, where unexpected failures often just bubble until a specific boundary chooses to intercept them.
 
