@@ -21,7 +21,7 @@ const [ok, fetchErr, res] = try fs.readFileSync("data.txt")
 
 This proposal addresses the ergonomic challenges of managing multiple, often nested, `try/catch` blocks necessary for handling operations that may fail at various points.
 
-The try block needlessly encloses the protected code in a block. This often prevents straightforward `const` assignment patterns and can reduce readability and static analysis through additional nesting. The `catch (error) {}` branch is usually where control-flow divergence happens, while the successful path often just assigns a variable.
+The try block needlessly encloses the protected code in a block. This often prevents straightforward `const` assignment patterns and can reduce readability and hinder static analysis through additional nesting. The `catch (error) {}` branch is usually where control-flow divergence happens, while the successful path often just assigns a variable.
 
 The solution is to add a `try <expression>` operator, a syntax similar to `await <expression>`, which catches any error that occurs when executing its expression and returns it as a value to the caller.
 
@@ -144,7 +144,6 @@ function getPostInfo(session, postSlug, cache, db) {
 
 In this example, the `try` blocks introduce additional nesting and prevent the protection a `const` declaration would provide.
 
-It also tends to interfere with static analysis tools, forcing developers to look for alternate solutions.
 
 Instead, using the proposed `try` operator simplifies the function:
 
@@ -291,7 +290,7 @@ function getUser(id, request, response) {
 
 This is obviously far more code to maintain, a lot of it repetitive and often redundent in these scenarios. 
 
-I'm sure there are times when returning a Result might make sense, but this proposal isn't about that. It's about the `try` operator, and the try operator just needs some way to encapsulate its three values. 
+There are times when returning a Result might make sense, but this proposal isn't about that. It's about the `try` operator, and the try operator just needs some way to encapsulate its three values. 
 
 Even here, the benefit of the try operator is that developers can pass the whole try expression to a helper function that converts the Result into their chosen error composition cascade. The callback that would previously have been required, which often makes static analysis more context dependant and difficult, is no longer necessary.
 
