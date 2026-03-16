@@ -21,7 +21,7 @@ const [ok, fetchErr, res] = try fs.readFileSync("data.txt")
 
 This proposal addresses the ergonomic challenges of managing multiple, often nested, `try/catch` blocks necessary for handling operations that may fail at various points.
 
-The try block needlessly encloses the protected code in a block. This often prevents straightforward `const` assignment patterns and can reduce readability through additional nesting. The `catch (error) {}` branch is usually where control-flow divergence happens, while the successful path is often linear.
+The try block needlessly encloses the protected code in a block. This often prevents straightforward `const` assignment patterns and can reduce readability and hinder static analysis through additional nesting. The `catch (error) {}` branch is usually where control-flow divergence happens, while the successful path often just assigns a variable.
 
 The solution is to add a `try <expression>` operator, a syntax similar to `await <expression>`, which catches any error that occurs when executing its expression and returns it as a value to the caller.
 
@@ -32,18 +32,19 @@ JavaScript has no existing equivalent for in-place exception-to-value conversion
 - [Status](#status)
 - [Authors](#authors)
 - [Try/Catch Is Not Enough](#trycatch-is-not-enough)
-- [Caller's Approach](#callers-approach)
-- [Result as a Return Type](#result-as-a-return-type)
+- [The rules of `try...catch` must be maintained](#the-rules-of-trycatch-must-be-maintained)
+  - [The Need for an `ok` Value](#the-need-for-an-ok-value)
+  - [No Flattening](#no-flattening)
+- [Caller vs Callee: Return Result Directly?](#caller-vs-callee-return-result-directly)
 - [Try Operator](#try-operator)
   - [Expressions are evaluated in a self-contained `try/catch` block](#expressions-are-evaluated-in-a-self-contained-trycatch-block)
-  - [Can be inlined.](#can-be-inlined)
+  - [Can be inlined](#can-be-inlined)
   - [Any valid expression can be used](#any-valid-expression-can-be-used)
     - [`await` is not a special case](#await-is-not-a-special-case)
   - [Statements are not expressions](#statements-are-not-expressions)
   - [Never throws](#never-throws)
   - [Parenthesis Required for Object Literals](#parenthesis-required-for-object-literals)
   - [Void Operations](#void-operations)
-  - [No Flattening](#no-flattening)
   - [Precedence and Parsing Notes](#precedence-and-parsing-notes)
   - [Sharp Edges and Hazards](#sharp-edges-and-hazards)
 - [Result Class](#result-class)
@@ -57,7 +58,6 @@ JavaScript has no existing equivalent for in-place exception-to-value conversion
   - [Type-Safe Errors](#type-safe-errors)
   - [Automatic Error Handling](#automatic-error-handling)
 - [Why Not `data` First?](#why-not-data-first)
-- [The Need for an `ok` Value](#the-need-for-an-ok-value)
 - [A Case for Syntax](#a-case-for-syntax)
 - [Why This Belongs in the Language](#why-this-belongs-in-the-language)
 - [Evidence Plan](#evidence-plan)
@@ -142,7 +142,8 @@ function getPostInfo(session, postSlug, cache, db) {
 }
 ```
 
-In this example, the `try` blocks primarily introduce additional nesting.
+In this example, the `try` blocks introduce additional nesting and prevent the protection a `const` declaration would provide.
+
 
 Instead, using the proposed `try` operator simplifies the function:
 
@@ -181,91 +182,128 @@ This approach often improves readability by cleanly separating the happy path fr
 
 Control flow remains linear, making it easier to follow, while only exception paths require explicit branching.
 
+And because the try operator returns a defined shape, static analysis tools can easily understand it.
+
 The result is a more structured, maintainable function where failures are handled concisely without unnecessary indentation.
 
 <br />
 
-## Caller's Approach
+## The rules of `try...catch` must be maintained
 
-JavaScript has evolved over decades, with countless libraries and codebases built on top of one another. Any new feature that does not consider compatibility with existing code risks negatively impacting its adoption, as refactoring functional, legacy code simply to accommodate a new feature is often an unjustifiable cost.
+The `try` block is pretty simple: 
 
-With that in mind, improvements in error handling can be approached in two ways:
+- `try {}` - This block completes if nothing throws.
+- `catch (e) {}` - This block is run if something throws.
+- `finally {}` - This runs regardless of whether anything throws. 
 
-1. **At the caller's level**:
+The `try` operator runs an expression and returns three values.
 
-   ```js
-   try {
-     const value = work()
-   } catch (error) {
-     console.error(error)
-   }
-   ```
+- `success` -- whether the expression threw
+- `error` -- if the expression throws, the value that was thrown
+- `value` -- if the expression returns, the value that was returned
+- The `success` boolean allows the user to add a conditional branch for the corresponding `catch` code.
+  ```
+  if (!success) {
+    // catch code
+  }
+  ```
+- Since `try` itself never throws, `finally` is implicit. 
 
-2. **At the callee's level**:
+<br />
+### The Need for an `ok` Value
 
-   ```js
-   function work() {
-     try {
-       // Performs some operation
+In JavaScript, `throw x` throws `x`. There is no wrapping or any other processing, so `throw undefined` is perfectly valid.
 
-       return { ok: true, value }
-     } catch (error) {
-       return { ok: false, error }
-     }
-   }
-   ```
+Because code can both throw `undefined` and return `undefined`, there is no way to tell whether it was successful based on `error` and `value` alone. No matter how undesirable it is to throw `undefined`, it is completely valid JavaScript. In order to maintain the guarantees of the `try...catch` block, there has to be some way to tell the difference between a thrown value and a returned value that still allows `undefined` to be a thrown value. 
 
-Both approaches achieve the same goal, but the second one requires refactoring implementations into a new format. Languages like Go and Rust use callee-level result values from the start. Introducing that model later in JavaScript has a different compatibility and adoption profile.
-
-This proposal accounts for this by moving the transformation of errors into values to the **caller** level, preserving the familiar semantics and placement of `try/catch`. This approach ensures backward compatibility with existing code.
-
-For platforms like Node.js and widely used libraries, compatibility costs are high. As a result, a callee-based transition for APIs like `fetch` or `fs.readFile` is unlikely in practice because it would require broad refactoring across existing codebases.
-
-Ironically, **these are precisely the kinds of functions where improved error handling is most needed**.
+The most obvious solution is to add a boolean to the result. 
 
 <br />
 
-## Result as a Return Type
+### No Flattening
 
-One of the `Result` principles is to wrap at the top, not throughout the stack. Returning `Result` from functions is possible, but often unnecessary.
+Nested Results are not flattened, whether its a value or error.
 
-Consider a call chain where `getUser()` calls `db.select()`, which calls `db.connect()`. If none return `Result`, the caller can simply write:
+This is intentional. Flattening a Result would allow the expression to lie about whether or not it threw, simply by returning an error Result or throwing a value Result.
+
+A user can always flatten the result if they want, but there's no way for them to _unflatten_ it if they need to know the difference. 
+
+<br />
+
+## Caller vs Callee: Return Result Directly?
+
+JavaScript already has a large ecosystem of `throw`-based APIs. The goal of this proposal is to make exceptions easier to consume and handle, not change how often developers throw errors. 
+
+JavaScript already has a similar model for async code. Promise rejections propagate up the `await` stack until the caller chooses a boundary with `.catch()`. The `try` operator brings that same caller-controlled inline exception-to-value conversion to synchronous code.
+
+This is especially the case in server-style request handling. If `db.connect()`, `db.select()`, or `normalize()` throws, the practical outcome may be to abort the request, log the failure, and show a generic error page. Similar patterns appear in parser and validation code, where unexpected failures often just bubble until a specific boundary chooses to intercept them.
+
+It usually doesn't make sense in the modern JavaScript ecosystem for a library to return a Result. Most code already throws when something goes wrong. The `try` operator makes it easier to handle code that throws. Returning a result makes this more difficult. 
+
+Consider a call chain where `getUser()` calls `db.connect()` and then `db.select()`. If errors are simply thrown, the stack will unwind automatically to whatever point the caller decides.
 
 ```js
-const result = try getUser(id)
+function getUser(id, request, response) {
+  const result = try normalize(db.select(db.connect(), id));
+
+  if (!result.ok && result.error instanceof DBError && result.error.code === "NOT_FOUND") {
+    // return a custom message to the user
+    return response.status(404).end();
+  } else if (!result.ok) {
+    throw new ServerError(result.error);
+  } else {
+    return response.send(JSON.stringify(result.value)).end();
+  }
+}
 ```
 
-This single `try` captures any error thrown anywhere in the chain. Compare this to returning `Result` throughout the stack:
+Giving the caller control (with the `try` operator) over exactly how far the stack unwinds is often more useful than returning a `Result` directly.
+
+If our database returned `Result` for every operation:
 
 ```js
 // Every function must check and forward errors.
 
-function getUser(id) {
+function getUser(id, request, response) {
   const connResult = db.connect()
 
   if (!connResult.ok) {
-    return connResult
+    throw new ServerError(connResult.error);
   }
 
   const userResult = db.select(connResult.value, id)
 
   if (!userResult.ok) {
-    return userResult
+    throw new ServerError(userResult.error);
   }
 
-  return Result.ok(normalize(userResult.value))
+  // and return it from our function because we might as well at this point
+  const normResult = normalize(userResult.value);
+
+  if (!normResult.ok) {
+    throw new ServerError(normResult.error);
+  }
+
+  return response.send(JSON.stringify(normResult.value)).end();
 }
 ```
 
-`Result`-returning functions cannot be freely composed with `throw`-based functions without explicit unwrapping at each boundary. This repetitive `if (!result.ok) { return result }` forwarding is reminiscent of Go's `if err != nil { return err }`. [Rob Pike's "Errors are values"](https://go.dev/blog/errors-are-values) addresses this: the solution is not more syntax sugar _(a `try?`-like operator)_, but recognizing that errors are values that can be programmed creatively. In many cases, this repetition is a useful signal that the code may benefit from restructuring rather than new syntax.
+This is obviously far more code to maintain, a lot of it repetitive and often redundent in these scenarios. 
 
-Returning `Result` can force callers to acknowledge errors in ways JSDoc cannot. However, the function coloring tradeoff often outweighs this benefit. When acknowledgement is not required, a single `try` at the top of the call stack achieves the same safety without coloring every function in the chain.
+There are times when returning a Result might make sense, but this proposal isn't about that. It's about the `try` operator, and the try operator just needs some way to encapsulate its three values. 
 
-The `try` operator is designed to coexist with `throw`, not replace it. Following the [caller's approach](#callers-approach), functions typically throw and let callers decide how to handle errors. Returning `Result` can still make sense when forcing acknowledgement is more important than minimizing cross-boundary error-conversion boilerplate.
+Even here, the benefit of the try operator is that developers can pass the whole try expression to a helper function that converts the Result into their chosen error composition cascade. The callback that would previously have been required, which often makes static analysis more context dependant and difficult, is no longer necessary.
 
-Mixed patterns (`Result` return + `throw`) may exist in practice, but this proposal treats them as unusual boundaries rather than the default composition path (see [No Flattening](#no-flattening)).
-
-For further discussion, see [GitHub Issue #92](https://github.com/arthurfiorette/proposal-try-operator/issues/92).
+```ts
+// instead of toChainMatch(() => db.select(db.connect(), id))
+toChainMatch(try db.select(db.connect(), id))
+  .chain(user => { if(!user) throw "NOT_FOUND"; })
+  .chain(normalize)
+  .match({
+    ok: (user) => response.send(JSON.stringify(user)).end(),
+    error: (err) => { throw new ServerError(err); }
+  });
+```
 
 <br />
 
@@ -335,7 +373,7 @@ try {
 const result = _result
 ```
 
-### Can be inlined.
+### Can be inlined
 
 Similar to `void`, `typeof`, `yield`, and `new`:
 
@@ -419,7 +457,7 @@ For example:
 
 All these thrown values are captured and encapsulated in the returned `Result`.
 
-As with other JavaScript constructs, host-level fatal termination conditions are out of scope.
+As with the try block, syntax and other fatal errors are out of scope.
 
 ### Parenthesis Required for Object Literals
 
@@ -466,16 +504,6 @@ function work() {
 
 Ignoring a `Result` should be treated as an explicit choice. In critical code paths, prefer handling or rethrowing to avoid accidentally swallowing failures.
 
-### No Flattening
-
-Wrapping a `Result`-returning function with `try` yields `Result<Result<T>>`, not a flattened `Result<T>`.
-
-This is intentional. Functions that return `Result` and also throw do exist in practice, but this proposal does not optimize for that pattern. The nested shape marks an unusual boundary: either `try` is unnecessary _(the callee already returns `Result`)_, or the callee contract is mismatched _(for example, it declares `Result<T>` but might throw)_. The rationale is not that `Result`-returning functions can never throw. It is that the operator should not silently normalize mixed channels.
-
-If this becomes a pain point, future proposals could introduce `Result.flatten()` or `.unwrap()` methods. By contrast, automatic flattening would be difficult to remove later without compatibility risk.
-
-When nested `Result` appears repeatedly, it usually indicates a boundary mismatch. Prefer picking one error channel per boundary and normalizing explicitly.
-
 ### Precedence and Parsing Notes
 
 This proposal keeps `try` expression-oriented. At Stage 0, the core goal is to validate ergonomics and semantics before final grammar tuning, but the intended parsing model is straightforward:
@@ -492,7 +520,6 @@ As the proposal advances, this section will be replaced by fully normative gramm
 This operator is intentionally small and does not replace all error-handling patterns.
 
 - `try fetch()` is not the same as `try await fetch()`. Rejections are caught when awaited.
-- `try <expression>` is not a substitute for `try/finally` when cleanup must always run.
 - Ignoring a `Result` can hide failures if done carelessly.
 - Catching all throws at expression level may also catch programmer mistakes (for example `TypeError`) unless code distinguishes and rethrows.
 - For shared policies (global retries, framework boundaries, platform-level telemetry), handling may belong at a higher boundary.
@@ -641,49 +668,17 @@ A detailed discussion about this topic is available at [GitHub Issue #13](https:
 
 <br />
 
-## The Need for an `ok` Value
-
-The idea of `throw x` doing _anything_ other than throwing `x` is inherently flawed. Wrapping the `error` in an object disregards this principle and introduces unnecessary ambiguity.
-
-Consider the following pseudocode, which might seem harmless but is actually risky:
-
-```js
-function doWork() {
-  if (check) {
-    throw createException(Errors.SOMETHING_WENT_WRONG)
-  }
-
-  return work()
-}
-
-const [error, data] = try doWork()
-
-if (!error) {
-  user.send(data)
-}
-```
-
-There is no guarantee that `createException` always returns an exception. Someone could even mistakenly write `throw null` or `throw undefined`, both of which are valid but undesired JavaScript code.
-
-Even though such cases are uncommon, they can occur. The `ok` value is crucial to mitigate these runtime risks effectively.
-
-For a more in-depth explanation of this decision, refer to [GitHub Issue #30](https://github.com/arthurfiorette/proposal-try-operator/issues/30).
-
-<br />
-
 ## A Case for Syntax
 
-This proposal intentionally combines the `try` operator with the `Result` class because each part motivates the other. The `try` operator standardizes a common pattern for safely catching synchronous function calls (similar to how Promise `.catch` handles async rejections).
+This proposal intentionally combines the `try` operator with the `Result` class because each part motivates the other. The `try` operator provides a useful pattern for safely catching synchronous function calls without resorting to block scope hoisting (similar to how Promise `.catch` handles async rejections by returning a user-defined value).
 
-At Stage 0, this is presented as a design hypothesis to validate with feedback and real-world usage:
+At Stage 0, this is presented as a design hypothesis to validate with feedback and real-world usage.
 
-- Syntax-only is incomplete: _it gives concise conversion but no shared standard outcome container_.
-- Runtime-only is incomplete: _it gives a container but keeps conversion boilerplate and callback wrappers_.
-- Combined proposal is coherent: _one expression form plus one standard shape_.
+It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. 
 
-It has been suggested that a runtime-only proposal for the `Result` class might face less resistance within the TC39 process. While this strategic viewpoint is understood, this proposal deliberately presents a unified feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
+Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. Separating the runtime from the syntax severs the solution from its motivating problem. It would ask the committee to standardize a `Result` object whose design is justified by a syntax **that doesn't yet exist**.
 
-Without the `try` operator, the `Result` class is just one of many possible library implementations, not a definitive language feature. We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
+We believe the feature must be evaluated on its complete ergonomic and practical merits, which is only possible when the syntax and runtime are presented together.
 
 <br />
 
@@ -691,11 +686,11 @@ Without the `try` operator, the `Result` class is just one of many possible libr
 
 A proposal doesn’t need to introduce a feature that is entirely impossible to achieve otherwise. In fact, most recent proposals primarily reduce the complexity of tasks that are already achievable by providing built-in conveniences.
 
-The absence of a `Result`-like type and a standard pattern for safely wrapping function calls has led to ecosystem fragmentation. Multiple packages and private utilities attempt to fill this gap with different shapes and conventions. This leaves developers with a poor choice: risk adopting a library that may be abandoned, or contribute to the problem by creating yet another bespoke implementation.
+Like earlier ergonomics proposals such as optional chaining (`?.`) and nullish coalescing (`??`), this proposal targets a recurring pattern that appears repeatedly in userland. Unlike those features, it also introduces a standard error-outcome container. 
 
-Like earlier ergonomics proposals such as optional chaining (`?.`) and nullish coalescing (`??`), this proposal targets a recurring pattern that appears repeatedly in userland. Unlike those features, it also introduces a standard error-outcome container.
+At this stage of the proposal it is not intended to cover every variation of existing libraries out there, but simply to provide the features required for the `try` operator to work. 
 
-It also creates a shared foundation between developers and package authors. Everyone can rely on the same Result implementation without compatibility concerns. The goal is to end the fragmentation and establish a foundational tool for robust error handling.
+<br/>
 
 ## Evidence Plan
 
@@ -705,6 +700,7 @@ Because this proposal is at **Stage 0**, proving the problem and tradeoffs has p
 - Compare before/after readability in terms of nesting depth and branching structure.
 - Classify where this operator prevents mistakes vs where it could hide mistakes if misused.
 - Catalog existing tuple/result wrappers and incompatibilities to justify standardization value.
+- Collect examples of mixed-channel code (`Result` return plus `throw`/rejection) to evaluate how common those boundaries are and where explicit normalization is preferable.
 
 <br />
 
