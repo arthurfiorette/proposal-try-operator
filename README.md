@@ -210,6 +210,7 @@ The `try` operator runs an expression and returns three values.
 - Since `try` itself never throws, `finally` is implicit. 
 
 <br />
+
 ### The Need for an `ok` Value
 
 In JavaScript, `throw x` throws `x`. There is no wrapping or any other processing, so `throw undefined` is perfectly valid.
